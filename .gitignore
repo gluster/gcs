@@ -1,1 +1,6 @@
 *~
+.vagrant
+.envrc
+*.retry
+gcs-venv
+kubectl

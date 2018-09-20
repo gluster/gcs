@@ -1,0 +1,98 @@
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: etcd-operator
+  namespace: gcs
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: etcd-operator
+  namespace: gcs
+rules:
+  - apiGroups:
+      - etcd.database.coreos.com
+    resources:
+      - etcdclusters
+      - etcdbackups
+      - etcdrestores
+    verbs:
+      - "*"
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - "*"
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - services
+      - endpoints
+      - persistentvolumeclaims
+      - events
+    verbs:
+      - "*"
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - "*"
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: etcd-operator
+  namespace: gcs
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: etcd-operator
+subjects:
+  - kind: ServiceAccount
+    name: etcd-operator
+    namespace: gcs
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: etcd-operator
+  namespace: gcs
+  labels:
+    gcs: etcd-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: etcd-operator
+  template:
+    metadata:
+      labels:
+        name: etcd-operator
+        gcs: etcd-operator
+      namespace: gcs
+    spec:
+      serviceAccountName: etcd-operator
+      containers:
+        - name: etcd-operator
+          image: quay.io/coreos/etcd-operator:v0.9.2
+          command:
+            - etcd-operator
+          env:
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name

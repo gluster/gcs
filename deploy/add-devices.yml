@@ -1,0 +1,40 @@
+---
+- name: Add devices to GD2
+  hosts: kube-master[0]
+  gather_facts: false
+  vars:
+    kubectl: /usr/local/bin/kubectl
+    devices_list:
+      - /dev/vdb
+      - /dev/vdc
+      - /dev/vdd
+
+  tasks:
+    - name: Get glusterd2-client service
+      command: "{{ kubectl }} -ngcs -ojsonpath='{.spec.clusterIP}' get service glusterd2-client "
+      register: gd2_client_service
+      until: gd2_client_service.rc == 0
+      delay: 5
+      retries: 5
+
+    - name: Set gd2_client_endpoint
+      set_fact:
+        gd2_client_endpoint: "http://{{ gd2_client_service.stdout }}:24007"
+        cacheable: true
+
+    - name: Get peers in cluster
+      uri:
+        url: "{{ gd2_client_endpoint }}/v1/peers"
+      register: peers_resp
+
+    - name: Set gd2_peers fact
+      set_fact:
+        gd2_peers: "{{ peers_resp.json | json_query('[].id') }}"
+
+    - name: Register devices
+      uri:
+        method: POST
+        url: "{{ gd2_client_endpoint }}/v1/devices/{{ item.0 }}"
+        body: "{ \"device\": \"{{ item.1 }}\"}"
+        body_format: json
+      loop: "{{ query('nested', gd2_peers, devices_list)}}"

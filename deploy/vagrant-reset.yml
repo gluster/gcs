@@ -1,0 +1,21 @@
+---
+- name: Reset Kubernetes
+  import_playbook: ./kubespray/reset.yml
+
+- name: Reset disks
+  hosts: all
+  gather_facts: false
+  become: true
+  vars:
+    devices_list:
+      - /dev/vdb
+      - /dev/vdc
+      - /dev/vdd
+
+  tasks:
+    - name: Rescan for PVs to update lvm cache on host
+      command: pvscan --cache
+
+    - name: Delete provisioned VGs
+      command: pvremove --force --force -y {{ item }}
+      loop: "{{ devices_list }}"

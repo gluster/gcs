@@ -1,0 +1,39 @@
+---
+- name: Pre-deploy bootstrapping
+  hosts: all
+  become: true
+  gather_facts: false
+  tags:
+    - predeploy
+  vars:
+    kmods:
+      - dm_mirror
+      - dm_snapshot
+      - dm_thin_pool
+
+  tasks:
+    - name: Extend the root LV and FS to occupy remaining space
+      lvol:
+        vg: atomicos
+        lv: root
+        size: 100%FREE
+        resizefs: true
+      tags: diskextend
+
+    - name: Load required kernel modules
+      modprobe:
+        name: "{{ item }}"
+        state: present
+      with_items: "{{ kmods }}"
+
+    - name: Persist loaded modules
+      copy:
+        dest: "/etc/modules-load.d/gluster-{{ item }}.conf"
+        content: "{{ item }}"
+      with_items: "{{ kmods }}"
+
+- import_playbook: "./deploy-k8s.yml"
+
+- import_playbook: "./deploy-gcs.yml"
+
+- import_playbook: "./add-devices.yml"
