@@ -11,7 +11,7 @@
 
   tasks:
     - name: Get glusterd2-client service
-      command: "{{ kubectl }} -ngcs -ojsonpath='{.spec.clusterIP}' get service glusterd2-client "
+      command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath='{.spec.clusterIP}' get service glusterd2-client "
       register: gd2_client_service
       until: gd2_client_service.rc == 0
       delay: 5

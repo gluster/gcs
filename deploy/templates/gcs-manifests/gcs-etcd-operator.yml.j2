@@ -3,13 +3,13 @@ kind: ServiceAccount
 apiVersion: v1
 metadata:
   name: etcd-operator
-  namespace: gcs
+  namespace: {{ gcs_namespace }}
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: etcd-operator
-  namespace: gcs
+  namespace: {{ gcs_namespace }}
 rules:
   - apiGroups:
       - etcd.database.coreos.com
@@ -52,7 +52,7 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: etcd-operator
-  namespace: gcs
+  namespace: {{ gcs_namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -60,13 +60,13 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: etcd-operator
-    namespace: gcs
+    namespace: {{ gcs_namespace }}
 ---
 kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: etcd-operator
-  namespace: gcs
+  namespace: {{ gcs_namespace }}
   labels:
     gcs: etcd-operator
 spec:
@@ -79,7 +79,7 @@ spec:
       labels:
         name: etcd-operator
         gcs: etcd-operator
-      namespace: gcs
+      namespace: {{ gcs_namespace }}
     spec:
       serviceAccountName: etcd-operator
       containers:

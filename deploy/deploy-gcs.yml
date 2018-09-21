@@ -32,15 +32,15 @@
         - name: GCS Pre | Manifests
           block:
             - name: GCS Pre | Manifests | Sync GCS manifests
-              synchronize:
-                src: gcs-manifests/
-                dest: "{{ manifests_dir }}/"
-
-            - name: GCS Pre | Manifests | Create gcs-gd2-cluster.yml from template
               template:
-                src: gcs-manifests/gcs-gd2-cluster.yml.j2
-                dest: "{{ manifests_dir }}/gcs-gd2-cluster.yml"
-
+                src: "gcs-manifests/{{ item }}.j2"
+                dest: "{{ manifests_dir }}/{{ item }}"
+              loop:
+                - gcs-namespace.yml
+                - gcs-etcd-operator.yml
+                - gcs-etcd-cluster.yml
+                - gcs-gd2-cluster.yml
+                - gcs-csi.yml
 
   post_tasks:
     - name: GCS Post | Manifests | Delete
@@ -62,7 +62,7 @@
             file: "{{ manifests_dir }}/gcs-etcd-operator.yml"
 
         - name: GCS | ETCD Operator | Wait for etcd-operator to be available
-          command: "{{ kubectl }} -ngcs -ojsonpath='{.status.availableReplicas}' get deployment etcd-operator"
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath='{.status.availableReplicas}' get deployment etcd-operator"
           register: result
           until: result.stdout|int == 1
           delay: 10
@@ -80,7 +80,7 @@
           retries: 5
 
         - name: GCS | ETCD Cluster | Get etcd-client service
-          command: "{{ kubectl }} -ngcs -ojsonpath='{.spec.clusterIP}' get service etcd-client"
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath='{.spec.clusterIP}' get service etcd-client"
           register: etcd_client_service
           until: etcd_client_service.rc == 0
           delay: 5
@@ -107,7 +107,7 @@
             file: "{{ manifests_dir }}/gcs-gd2-cluster.yml"
 
         - name: GCS | GD2 Cluster | Get glusterd2-client service
-          command: "{{ kubectl }} -ngcs -ojsonpath='{.spec.clusterIP}' get service glusterd2-client "
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath='{.spec.clusterIP}' get service glusterd2-client "
           register: gd2_client_service
           until: gd2_client_service.rc == 0
           delay: 5
@@ -134,21 +134,21 @@
             file: "{{ manifests_dir }}/gcs-csi.yml"
 
         - name: GCS | CSI Driver | Wait for csi-provisioner to become available
-          command: "{{ kubectl }} -ngcs -ojsonpath={.status.readyReplicas} get statefulset csi-provisioner-glusterfsplugin"
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.readyReplicas} get statefulset csi-provisioner-glusterfsplugin"
           register: result
           until: result.stdout|int == 1
           delay: 10
           retries: 50
 
         - name: GCS | CSI Driver | Wait for csi-attacher to become available
-          command: "{{ kubectl }} -ngcs -ojsonpath={.status.readyReplicas} get statefulset csi-attacher-glusterfsplugin"
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.readyReplicas} get statefulset csi-attacher-glusterfsplugin"
           register: result
           until: result.stdout|int == 1
           delay: 10
           retries: 50
 
         - name: GCS | CSI Driver | Wait for csi-nodeplugin to become available
-          command: "{{ kubectl }} -ngcs -ojsonpath={.status.numberAvailable} get daemonset csi-nodeplugin-glusterfsplugin"
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.numberAvailable} get daemonset csi-nodeplugin-glusterfsplugin"
           register: result
           until: result.stdout|int == 3
           delay: 10

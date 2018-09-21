@@ -3,7 +3,7 @@ kind: DaemonSet
 apiVersion: apps/v1
 metadata:
   name: glusterd2-cluster
-  namespace: gcs
+  namespace: {{ gcs_namespace }}
   labels:
     gcs: glusterd2-cluster
 spec:
@@ -27,7 +27,7 @@ spec:
             periodSeconds: 60
           env:
             - name: GD2_ETCDENDPOINTS
-              value: "http://etcd-client.gcs:2379"
+              value: "http://etcd-client.{{ gcs_namespace }}:2379"
             - name: GD2_CLUSTER_ID
               value: "{{ gcs_gd2_clusterid }}"
             # TODO: Remove RESTAUTH false once we enable setting auth token
@@ -67,7 +67,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: glusterd2-client
-  namespace: gcs
+  namespace: {{ gcs_namespace }}
   labels:
     gcs: glusterd2-service
 spec:
@@ -83,7 +83,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: glusterd2-client-nodeport
-  namespace: gcs
+  namespace: {{ gcs_namespace }}
   labels:
     gcs: glusterd2-service
 spec:

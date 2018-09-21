@@ -3,7 +3,7 @@ kind: EtcdCluster
 apiVersion: etcd.database.coreos.com/v1beta2
 metadata:
   name: etcd
-  namespace: gcs
+  namespace: {{ gcs_namespace }}
   labels:
     gcs: etcd-cluster
 spec:
