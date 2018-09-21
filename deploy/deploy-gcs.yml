@@ -1,0 +1,155 @@
+---
+- name: Deploy GCS
+  hosts: kube-master[0]
+  become: true
+  gather_facts: false
+  vars:
+    kubectl: /usr/local/bin/kubectl
+
+  pre_tasks:
+    - name: GCS Pre | Cluster ID
+      block:
+        - name: GCS Pre | Cluster ID | Generate a UUID
+          command: uuidgen
+          register: uuidgen_result
+
+        - name: GCS Pre | Cluster ID | Set gcs_gd2_clusterid fact
+          set_fact:
+            gcs_gd2_clusterid: "{{ uuidgen_result.stdout }}"
+
+    - name: GCS Pre | Manifests directory
+      block:
+        - name: GCS Pre | Manifests directory | Create a temporary directory
+          tempfile:
+            state: directory
+            prefix: gcs-manifests
+          register: tempdir
+
+        - name: GCS Pre | Manifests directory | Set manifests_dir fact
+          set_fact:
+            manifests_dir: "{{ tempdir.path }}"
+
+        - name: GCS Pre | Manifests
+          block:
+            - name: GCS Pre | Manifests | Sync GCS manifests
+              template:
+                src: "gcs-manifests/{{ item }}.j2"
+                dest: "{{ manifests_dir }}/{{ item }}"
+              loop:
+                - gcs-namespace.yml
+                - gcs-etcd-operator.yml
+                - gcs-etcd-cluster.yml
+                - gcs-gd2-cluster.yml
+                - gcs-csi.yml
+
+  post_tasks:
+    - name: GCS Post | Manifests | Delete
+      file:
+        path: "{{ manifests_dir }}"
+        state: absent
+
+  tasks:
+    - name: GCS | Namespace | Create GCS namespace
+      kube:
+        kubectl: "{{ kubectl }}"
+        file: "{{ manifests_dir }}/gcs-namespace.yml"
+
+    - name: GCS | ETCD Operator
+      block:
+        - name: GCS | ETCD Operator | Deploy etcd-operator
+          kube:
+            kubectl: "{{ kubectl }}"
+            file: "{{ manifests_dir }}/gcs-etcd-operator.yml"
+
+        - name: GCS | ETCD Operator | Wait for etcd-operator to be available
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath='{.status.availableReplicas}' get deployment etcd-operator"
+          register: result
+          until: result.stdout|int == 1
+          delay: 10
+          retries: 50
+
+    - name: GCS | ETCD Cluster
+      block:
+        - name: GCS | ETCD Cluster | Deploy etcd-cluster
+          kube:
+            kubectl: "{{ kubectl }}"
+            file: "{{ manifests_dir }}/gcs-etcd-cluster.yml"
+          register: result
+          until: not result.failed
+          delay: 5
+          retries: 5
+
+        - name: GCS | ETCD Cluster | Get etcd-client service
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath='{.spec.clusterIP}' get service etcd-client"
+          register: etcd_client_service
+          until: etcd_client_service.rc == 0
+          delay: 5
+          retries: 5
+
+        - name: GCS | ETCD Cluster | Set etcd_client_endpoint
+          set_fact:
+            etcd_client_endpoint: "http://{{ etcd_client_service.stdout }}:2379"
+            cacheable: true
+
+        - name: GCS | ETCD Cluster | Wait for etcd-cluster to become ready
+          uri:
+            url: "{{ etcd_client_endpoint }}/v2/members"
+          register: result
+          until: result.status is defined and (result.status == 200 and result.json.members|length == 3)
+          delay: 10
+          retries: 50
+
+    - name: GCS | GD2 Cluster
+      block:
+        - name: GCS | GD2 Cluster | Deploy glusterd2-cluster
+          kube:
+            kubectl: "{{ kubectl }}"
+            file: "{{ manifests_dir }}/gcs-gd2-cluster.yml"
+
+        - name: GCS | GD2 Cluster | Get glusterd2-client service
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath='{.spec.clusterIP}' get service glusterd2-client "
+          register: gd2_client_service
+          until: gd2_client_service.rc == 0
+          delay: 5
+          retries: 5
+
+        - name: GCS | GD2 Cluster | Set gd2_client_endpoint
+          set_fact:
+            gd2_client_endpoint: "http://{{ gd2_client_service.stdout }}:24007"
+            cacheable: true
+
+        - name: GCS | GD2 Cluster | Wait for glusterd2-cluster to become ready
+          uri:
+            url: "{{ gd2_client_endpoint }}/v1/peers"
+          register: result
+          until: result.status is defined and (result.status == 200 and result.json|length == groups['kube-node']|length)
+          delay: 10
+          retries: 50
+
+    - name: GCS | CSI Driver
+      block:
+        - name: GCS | CSI Driver | Deploy csi driver
+          kube:
+            kubectl: "{{ kubectl }}"
+            file: "{{ manifests_dir }}/gcs-csi.yml"
+
+        - name: GCS | CSI Driver | Wait for csi-provisioner to become available
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.readyReplicas} get statefulset csi-provisioner-glusterfsplugin"
+          register: result
+          until: result.stdout|int == 1
+          delay: 10
+          retries: 50
+
+        - name: GCS | CSI Driver | Wait for csi-attacher to become available
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.readyReplicas} get statefulset csi-attacher-glusterfsplugin"
+          register: result
+          until: result.stdout|int == 1
+          delay: 10
+          retries: 50
+
+        - name: GCS | CSI Driver | Wait for csi-nodeplugin to become available
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.numberAvailable} get daemonset csi-nodeplugin-glusterfsplugin"
+          register: result
+          until: result.stdout|int == 3
+          delay: 10
+          retries: 50

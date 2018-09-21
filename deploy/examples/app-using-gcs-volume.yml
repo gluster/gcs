@@ -1,0 +1,32 @@
+# Create a PVC first
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: gcs-example-volume
+spec:
+  storageClassName: glusterfs-csi
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+# Next create a Pod that binds to the PVC
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: gcs-example
+  labels:
+    app: redis
+spec:
+  containers:
+    - name: redis
+      image: redis:latest
+      volumeMounts:
+        - mountPath: /data
+          name: gcs-example-volume
+  volumes:
+    - name: gcs-example-volume
+      persistentVolumeClaim:
+        claimName: gcs-example-volume

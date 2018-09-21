@@ -1,0 +1,97 @@
+---
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: glusterd2-cluster
+  namespace: {{ gcs_namespace }}
+  labels:
+    gcs: glusterd2-cluster
+spec:
+  selector:
+    matchLabels:
+      gcs: glusterd2
+  template:
+    metadata:
+      labels:
+        name: glusterd2
+        gcs: glusterd2
+    spec:
+      containers:
+        - name: glusterd2
+          image: docker.io/gluster/glusterd2-nightly:20180920
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 24007
+            initialDelaySeconds: 60
+            periodSeconds: 60
+          env:
+            - name: GD2_ETCDENDPOINTS
+              value: "http://etcd-client.{{ gcs_namespace }}:2379"
+            - name: GD2_CLUSTER_ID
+              value: "{{ gcs_gd2_clusterid }}"
+            # TODO: Remove RESTAUTH false once we enable setting auth token
+            # using secrets
+            - name: GD2_RESTAUTH
+              value: "false"
+          securityContext:
+            capabilities: {}
+            privileged: true
+          volumeMounts:
+            - name: gluster-dev
+              mountPath: "/dev"
+            - name: gluster-cgroup
+              mountPath: "/sys/fs/cgroup"
+              readOnly: true
+            - name: gluster-lvm
+              mountPath: "/run/lvm"
+            - name: gluster-kmods
+              mountPath: "/usr/lib/modules"
+              readOnly: true
+      volumes:
+        - name: gluster-dev
+          hostPath:
+            path: "/dev"
+        - name: gluster-cgroup
+          hostPath:
+            path: "/sys/fs/cgroup"
+        - name: gluster-lvm
+          hostPath:
+            path: "/run/lvm"
+        - name: gluster-kmods
+          hostPath:
+            path: "/usr/lib/modules"
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: glusterd2-client
+  namespace: {{ gcs_namespace }}
+  labels:
+    gcs: glusterd2-service
+spec:
+  selector:
+    gcs: glusterd2
+  ports:
+    - protocol: TCP
+      port: 24007
+      targetPort: 24007
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: glusterd2-client-nodeport
+  namespace: {{ gcs_namespace }}
+  labels:
+    gcs: glusterd2-service
+spec:
+  selector:
+    gcs: glusterd2
+  ports:
+    - protocol: TCP
+      port: 24007
+      targetPort: 24007
+      nodePort: 31007
+  type: NodePort

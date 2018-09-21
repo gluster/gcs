@@ -1,0 +1,13 @@
+---
+kind: EtcdCluster
+apiVersion: etcd.database.coreos.com/v1beta2
+metadata:
+  name: etcd
+  namespace: {{ gcs_namespace }}
+  labels:
+    gcs: etcd-cluster
+spec:
+  size: 3
+  version: 3.3.8
+
+# TODO: Setup backup
