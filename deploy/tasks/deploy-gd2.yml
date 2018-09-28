@@ -1,0 +1,10 @@
+## This file is included as a loop from the deploy-gcs playbook
+---
+- name: GCS | GD2 Cluster | Set fact kube_hostname
+  set_fact:
+    kube_hostname: "{{ gcs_node }}"
+
+- name: GCS | GD2 Cluster | Deploy glusterd2 on {{ gcs_node }}
+  kube:
+    kubectl: "{{ kubectl }}"
+    file: "{{ manifests_dir }}/gcs-gd2-{{ gcs_node }}.yml"

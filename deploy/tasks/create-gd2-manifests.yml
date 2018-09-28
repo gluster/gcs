@@ -1,0 +1,10 @@
+## This file is included as a loop from the deploy-gcs playbook
+---
+- name: GCS Pre | Manifests | Create GD2 manifests for {{ gcs_node }} | Set fact kube_hostname
+  set_fact:
+    kube_hostname: "{{ gcs_node }}"
+
+- name: GCS Pre | Manifests | Create GD2 manifests for {{ gcs_node }} | Create gcs-gd2-{{ gcs_node }}.yml
+  template:
+    src: "gcs-manifests/gcs-gd2.yml.j2"
+    dest: "{{ manifests_dir }}/gcs-gd2-{{ gcs_node }}.yml"

@@ -68,17 +68,22 @@ metadata:
   name: etcd-operator
   namespace: {{ gcs_namespace }}
   labels:
-    gcs: etcd-operator
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: etcd
+    app.kubernetes.io/name: etcd-operator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: etcd-operator
+      app.kubernetes.io/part-of: gcs
+      app.kubernetes.io/component: etcd
+      app.kubernetes.io/name: etcd-operator
   template:
     metadata:
       labels:
-        name: etcd-operator
-        gcs: etcd-operator
+        app.kubernetes.io/part-of: gcs
+        app.kubernetes.io/component: etcd
+        app.kubernetes.io/name: etcd-operator
       namespace: {{ gcs_namespace }}
     spec:
       serviceAccountName: etcd-operator

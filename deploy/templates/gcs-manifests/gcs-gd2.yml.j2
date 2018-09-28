@@ -1,21 +1,36 @@
 ---
-kind: DaemonSet
+kind: StatefulSet
 apiVersion: apps/v1
 metadata:
-  name: glusterd2-cluster
+  name: {{ kube_hostname }}
   namespace: {{ gcs_namespace }}
   labels:
-    gcs: glusterd2-cluster
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: glusterfs
+    app.kubernetes.io/name: glusterd2
 spec:
+  serviceName: glusterd2
   selector:
     matchLabels:
-      gcs: glusterd2
+      app.kubernetes.io/part-of: gcs
+      app.kubernetes.io/component: glusterfs
+      app.kubernetes.io/name: glusterd2
   template:
     metadata:
       labels:
-        name: glusterd2
-        gcs: glusterd2
+        app.kubernetes.io/part-of: gcs
+        app.kubernetes.io/component: glusterfs
+        app.kubernetes.io/name: glusterd2
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - {{ kube_hostname }}
       containers:
         - name: glusterd2
           image: docker.io/gluster/glusterd2-nightly:20180920
@@ -23,13 +38,17 @@ spec:
             httpGet:
               path: /ping
               port: 24007
-            initialDelaySeconds: 60
+            initialDelaySeconds: 10
             periodSeconds: 60
           env:
             - name: GD2_ETCDENDPOINTS
               value: "http://etcd-client.{{ gcs_namespace }}:2379"
             - name: GD2_CLUSTER_ID
               value: "{{ gcs_gd2_clusterid }}"
+            - name: GD2_CLIENTADDRESS
+              value: "{{ kube_hostname }}-0.glusterd2.{{ gcs_namespace }}:24007"
+            - name: GD2_PEERADDRESS
+              value: "{{ kube_hostname }}-0.glusterd2.{{ gcs_namespace }}:24008"
             # TODO: Remove RESTAUTH false once we enable setting auth token
             # using secrets
             - name: GD2_RESTAUTH
@@ -48,6 +67,10 @@ spec:
             - name: gluster-kmods
               mountPath: "/usr/lib/modules"
               readOnly: true
+            - name: glusterd2-statedir
+              mountPath: "/var/lib/glusterd2"
+            - name: glusterd2-logdir
+              mountPath: "/var/log/glusterd2"
       volumes:
         - name: gluster-dev
           hostPath:
@@ -61,37 +84,11 @@ spec:
         - name: gluster-kmods
           hostPath:
             path: "/usr/lib/modules"
-
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: glusterd2-client
-  namespace: {{ gcs_namespace }}
-  labels:
-    gcs: glusterd2-service
-spec:
-  selector:
-    gcs: glusterd2
-  ports:
-    - protocol: TCP
-      port: 24007
-      targetPort: 24007
-
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: glusterd2-client-nodeport
-  namespace: {{ gcs_namespace }}
-  labels:
-    gcs: glusterd2-service
-spec:
-  selector:
-    gcs: glusterd2
-  ports:
-    - protocol: TCP
-      port: 24007
-      targetPort: 24007
-      nodePort: 31007
-  type: NodePort
+        - name: glusterd2-statedir
+          hostPath:
+            path: "/var/lib/glusterd2"
+            type: DirectoryOrCreate
+        - name: glusterd2-logdir
+          hostPath:
+            path: "/var/log/glusterd2"
+            type: DirectoryOrCreate

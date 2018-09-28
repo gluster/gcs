@@ -1,0 +1,17 @@
+## Only the ansible master needs to have passwordless ssh setup
+master ansible_host=10.10.10.1
+
+## List all the kube nodes that will form the GCS cluster
+## Ensure that their hostnames are correct
+gcs1 gcs_disks='["/dev/sdb", "/dev/sdc", "/dev/sdd"]'
+gcs2 gcs_disks='["/dev/sdb", "/dev/sdc", "/dev/sdd"]'
+gcs3 gcs_disks='["/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde"]'
+
+
+[kube-master]
+master
+
+[gcs-node]
+gcs1
+gcs2
+gcs3

@@ -36,14 +36,6 @@ At the moment this is a playbook, but it really shuold become a role.
 > - Convert to role
 > - Add more configurability
 
-### add-devices.yml
-
-This playbook adds block devices to the glusterd2-cluster to allow smart volume creation to work. At the moment it works only for the Vagrant provisioned environment.
-
-> TODO:  
-> - Make more universal
-> - Convert to role
-
 ### vagrant-playbook.yml
 
 This playbook combines all the above to provision the local cluster brought up by Vagrant
@@ -68,8 +60,25 @@ This scripts prepares the local environement to run the deployment.
 
 ### External kube cluster
 
-TODO:
-- Write up how to use the deploy-gcs.yml playbook against an external K8S cluster.
+To use the deploy-gcs.yml playbook on an externally setup kubernetes cluster, requires a custom inventory file.
+An example of this custom inventory is in `examples/inventory-gcs-only.example`
+
+Please read up the [ansible inventory](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html) documentation to learn about the ansible inventory file format.
+
+The custom inventory file needs the following,
+
+- One or more kubernetes master hosts must be defined, and must be set up with password-less ssh.
+- One or more gcs hosts must be defined as well, but need not have password-less ssh.
+- The hostnames used to the gcs hosts must be the ones used by kubernets as the node names. If unsure, get the correct names using `kubectl get nodes`.
+- The gcs hosts must define the disks to be used by GCS, as a `gcs_disks` hostvar.
+- A `kube-master` group must be defined, with the master hosts as members.
+- A `gcs-node` group must be defined, with the gcs hosts as members.
+
+With the inventory file defined, run the deploy-gcs playbook as follows,
+
+```
+(gcs-venv) $ ansible-playbook --become deploy-gcs.yml
+```
 
 ### Local cluster using Vagrant
 

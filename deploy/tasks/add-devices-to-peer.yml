@@ -1,0 +1,15 @@
+## This file is included as a loop from the deploy-gcs playbook
+---
+- name: GCS | GD2 Cluster | Add devices | Set facts
+  set_fact:
+    kube_hostname: "{{ peer.name.split('-')[0]}}"
+
+- name: GCS | GD2 Cluster | Add devices | Add devices for {{ kube_hostname }}
+  uri:
+    url: "{{ gd2_client_endpoint }}/v1/devices/{{ peer.id }}"
+    method: POST
+    body: "{ \"device\": \"{{ disk }}\"}"
+    body_format: json
+  loop: "{{ hostvars[kube_hostname].gcs_disks }}"
+  loop_control:
+    loop_var: disk
