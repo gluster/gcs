@@ -12,18 +12,22 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
   config.vm.box = "centos/atomic-host"
+  host_vars = {}
   (1..3).each do |i|
-    config.vm.define "kube#{i}" do |vm|
-      vm.vm.hostname = "kube#{i}"
+    config.vm.define vm_name = "kube#{i}" do |vm|
+      vm.vm.hostname = vm_name
 
       vm.vm.provider :libvirt do |lv|
         lv.default_prefix = "gcs"
         lv.cpus = 2
         lv.memory = 2048
 
+        disks = []
         (1..3).each do |d|
           lv.storage :file, :device => "vd#{driveletters[d]}", :size => '1024G'
+          disks.push "/dev/vd#{driveletters[d]}"
         end
+        host_vars[vm_name] = {"gcs_disks" => disks.to_s}
       end
       # TODO: Maybe support other providers... like VirtualBox
 
@@ -36,8 +40,10 @@ Vagrant.configure("2") do |config|
             "etcd" => ["kube[1:3]"],
             "kube-master" => ["kube[1:2]"],
             "kube-node" => ["kube[1:3]"],
-            "k8s-cluster:children" => ["kube-master", "kube-node"]
+            "k8s-cluster:children" => ["kube-master", "kube-node"],
+            "gcs-node" => ["kube[1:3]"]
           }
+          ansible.host_vars = host_vars
         end
       end
     end

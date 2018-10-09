@@ -5,7 +5,9 @@ metadata:
   name: etcd
   namespace: {{ gcs_namespace }}
   labels:
-    gcs: etcd-cluster
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: etcd
+    app.kubernetes.io/name: etcd-cluster
 spec:
   size: 3
   version: 3.3.8

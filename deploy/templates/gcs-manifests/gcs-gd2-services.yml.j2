@@ -1,0 +1,73 @@
+---
+# Headless service for GD2 Stateful sets
+kind: Service
+apiVersion: v1
+metadata:
+  name: glusterd2
+  namespace: {{ gcs_namespace }}
+  labels:
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: glusterfs
+    app.kubernetes.io/name: glusterd2-service
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: glusterfs
+    app.kubernetes.io/name: glusterd2
+  ports:
+    - name: clientport
+      protocol: TCP
+      port: 24007
+      targetPort: 24007
+    - name: peerport
+      protocol: TCP
+      port: 24008
+      targetPort: 24008
+
+---
+# Client service for the CSI driver
+kind: Service
+apiVersion: v1
+metadata:
+  name: glusterd2-client
+  namespace: {{ gcs_namespace }}
+  labels:
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: glusterfs
+    app.kubernetes.io/name: glusterd2-service
+spec:
+  selector:
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: glusterfs
+    app.kubernetes.io/name: glusterd2
+  ports:
+    - name: clientport
+      protocol: TCP
+      port: 24007
+      targetPort: 24007
+
+---
+# Nodeport service for access to GD2 from outside the cluster
+# TODO: Do not enable by default
+kind: Service
+apiVersion: v1
+metadata:
+  name: glusterd2-client-nodeport
+  namespace: {{ gcs_namespace }}
+  labels:
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: glusterfs
+    app.kubernetes.io/name: glusterd2-service
+spec:
+  selector:
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: glusterfs
+    app.kubernetes.io/name: glusterd2
+  ports:
+    - name: clientport
+      protocol: TCP
+      port: 24007
+      targetPort: 24007
+      nodePort: 31007
+  type: NodePort

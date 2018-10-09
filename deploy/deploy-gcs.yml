@@ -29,18 +29,22 @@
           set_fact:
             manifests_dir: "{{ tempdir.path }}"
 
-        - name: GCS Pre | Manifests
-          block:
-            - name: GCS Pre | Manifests | Sync GCS manifests
-              template:
-                src: "gcs-manifests/{{ item }}.j2"
-                dest: "{{ manifests_dir }}/{{ item }}"
-              loop:
-                - gcs-namespace.yml
-                - gcs-etcd-operator.yml
-                - gcs-etcd-cluster.yml
-                - gcs-gd2-cluster.yml
-                - gcs-csi.yml
+        - name: GCS Pre | Manifests | Sync GCS manifests
+          template:
+            src: "gcs-manifests/{{ item }}.j2"
+            dest: "{{ manifests_dir }}/{{ item }}"
+          loop:
+            - gcs-namespace.yml
+            - gcs-etcd-operator.yml
+            - gcs-etcd-cluster.yml
+            - gcs-gd2-services.yml
+            - gcs-csi.yml
+
+        - name: GCS Pre | Manifests | Create GD2 manifests
+          include_tasks: tasks/create-gd2-manifests.yml
+          loop: "{{ groups['gcs-node'] }}"
+          loop_control:
+            loop_var: gcs_node
 
   post_tasks:
     - name: GCS Post | Manifests | Delete
@@ -101,10 +105,16 @@
 
     - name: GCS | GD2 Cluster
       block:
-        - name: GCS | GD2 Cluster | Deploy glusterd2-cluster
+        - name: GCS | GD2 Cluster | Deploy GD2 services
           kube:
             kubectl: "{{ kubectl }}"
-            file: "{{ manifests_dir }}/gcs-gd2-cluster.yml"
+            file: "{{ manifests_dir }}/gcs-gd2-services.yml"
+
+        - name: GCS | GD2 Cluster | Deploy GD2
+          include_tasks: ./tasks/deploy-gd2.yml
+          loop: "{{ groups['gcs-node'] }}"
+          loop_control:
+            loop_var: gcs_node
 
         - name: GCS | GD2 Cluster | Get glusterd2-client service
           command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath='{.spec.clusterIP}' get service glusterd2-client "
@@ -125,6 +135,17 @@
           until: result.status is defined and (result.status == 200 and result.json|length == groups['kube-node']|length)
           delay: 10
           retries: 50
+
+        - name: GCS | GD2 Cluster | Get peers in cluster
+          uri:
+            url: "{{ gd2_client_endpoint }}/v1/peers"
+          register: peers_resp
+
+        - name: GCS | GD2 Cluster | Add devices
+          include_tasks: ./tasks/add-devices-to-peer.yml
+          loop: "{{ peers_resp.json }}"
+          loop_control:
+            loop_var: peer
 
     - name: GCS | CSI Driver
       block:

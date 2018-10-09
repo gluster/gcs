@@ -1,0 +1,33 @@
+kube1 ansible_host=10.10.10.1
+kube2 ansible_host=10.10.10.2 gcs_disks='["/dev/sdb", "/dev/sdc", "/dev/sdd"]'
+kube3 ansible_host=10.10.10.3 gcs_disks='["/dev/sdb", "/dev/sdc", "/dev/sdd"]'
+kube4 ansible_host=10.10.10.4 gcs_disks='["/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde"]'
+
+## Hosts that will run etcd for the Kubernetes cluster
+[etcd]
+kube1
+kube2
+kube3
+
+## Hosts that will be kubernetes master nodes
+[kube-master]
+kube1
+
+## Hosts that will be kuberenetes nodes
+[kube-node]
+kube1
+kube2
+kube3
+kube4
+
+## The full kubernetes cluster
+[k8s-cluster:children]
+kube-master
+kube-node
+
+## Hosts that will be used for GCS.
+## Systems grouped here need to define 'gcs_disks' as hostvars, which are the disks that will be used by GCS to provision storage.
+[gcs-node]
+kube2
+kube3
+kube4

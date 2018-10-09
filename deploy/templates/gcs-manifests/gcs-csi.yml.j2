@@ -41,16 +41,24 @@ apiVersion: apps/v1
 metadata:
   name: csi-attacher-glusterfsplugin
   namespace: {{ gcs_namespace }}
+  labels:
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: csi-driver
+    app.kubernetes.io/name: csi-attacher
 spec:
   serviceName: csi-attacher
   replicas: 1
   selector:
     matchLabels:
-      app: csi-attacher-glusterfsplugin
+      app.kubernetes.io/part-of: gcs
+      app.kubernetes.io/component: csi-driver
+      app.kubernetes.io/name: csi-attacher
   template:
     metadata:
       labels:
-        app: csi-attacher-glusterfsplugin
+        app.kubernetes.io/part-of: gcs
+        app.kubernetes.io/component: csi-driver
+        app.kubernetes.io/name: csi-attacher
     spec:
       serviceAccountName: csi-attacher
       containers:
@@ -131,14 +139,22 @@ apiVersion: apps/v1
 metadata:
   name: csi-nodeplugin-glusterfsplugin
   namespace: {{ gcs_namespace }}
+  labels:
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: csi-driver
+    app.kubernetes.io/name: csi-nodeplugin
 spec:
   selector:
     matchLabels:
-      app: csi-nodeplugin-glusterfsplugin
+      app.kubernetes.io/part-of: gcs
+      app.kubernetes.io/component: csi-driver
+      app.kubernetes.io/name: csi-nodeplugin
   template:
     metadata:
       labels:
-        app: csi-nodeplugin-glusterfsplugin
+        app.kubernetes.io/part-of: gcs
+        app.kubernetes.io/component: csi-driver
+        app.kubernetes.io/name: csi-nodeplugin
       namespace: {{ gcs_namespace }}
     spec:
       serviceAccount: csi-nodeplugin
@@ -240,18 +256,26 @@ apiVersion: apps/v1
 metadata:
   name: csi-provisioner-glusterfsplugin
   namespace: {{ gcs_namespace }}
+  labels:
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: csi-driver
+    app.kubernetes.io/name: csi-provisioner
 spec:
   serviceName: csi-provisioner-glusterfsplugin
   replicas: 1
   selector:
     matchLabels:
-      app: csi-provisioner-glusterfsplugin
+      app.kubernetes.io/part-of: gcs
+      app.kubernetes.io/component: csi-driver
+      app.kubernetes.io/name: csi-provisioner
   template:
     metadata:
       name: csi-provisioner
       namespace: {{ gcs_namespace }}
       labels:
-        app: csi-provisioner-glusterfsplugin
+        app.kubernetes.io/part-of: gcs
+        app.kubernetes.io/component: csi-driver
+        app.kubernetes.io/name: csi-provisioner
     spec:
       serviceAccountName: csi-provisioner
       containers:
