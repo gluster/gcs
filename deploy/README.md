@@ -29,7 +29,7 @@ This playbook deploys GCS on a Kubernetes cluster. All of GCS, except for the St
 
 Uses the inventory defined for deploy-k8s.yml.
 
-At the moment this is a playbook, but it really shuold become a role.
+At the moment this is a playbook, but it really should become a role.
 
 > TODO:  
 > - Enable secure deployment with ReST AUTH and TLS.
@@ -44,7 +44,7 @@ This playbook combines all the above to provision the local cluster brought up b
 
 ### prepare.sh
 
-This scripts prepares the local environement to run the deployment.
+This script prepares the local environment to run the deployment.
 
 ## How to use
 
@@ -60,7 +60,7 @@ This scripts prepares the local environement to run the deployment.
 
 ### External kube cluster
 
-To use the deploy-gcs.yml playbook on an externally setup kubernetes cluster, requires a custom inventory file.
+To use the deploy-gcs.yml playbook on an external setup kubernetes cluster, requires a custom inventory file.
 An example of this custom inventory is in `examples/inventory-gcs-only.example`
 
 Please read up the [ansible inventory](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html) documentation to learn about the ansible inventory file format.
@@ -69,7 +69,7 @@ The custom inventory file needs the following,
 
 - One or more kubernetes master hosts must be defined, and must be set up with password-less ssh.
 - One or more gcs hosts must be defined as well, but need not have password-less ssh.
-- The hostnames used to the gcs hosts must be the ones used by kubernets as the node names. If unsure, get the correct names using `kubectl get nodes`.
+- The hostnames used to the gcs hosts must be the ones used by kubernetes as the node names. If unsure, get the correct names using `kubectl get nodes`.
 - The gcs hosts must define the disks to be used by GCS, as a `gcs_disks` hostvar.
 - A `kube-master` group must be defined, with the master hosts as members.
 - A `gcs-node` group must be defined, with the gcs hosts as members.
@@ -90,7 +90,7 @@ virtual disks attached to each node.
 > /var/lib/libvirt/images, so if used the cluster is used heavily for GCS
 > testing, it is possible to run out of space on your root partition.
 
-- Run the `prepare.sh` script to perform perliminary checks and prepare the virtualenv.
+- Run the `prepare.sh` script to perform preliminary checks and prepare the virtualenv.
 
 ```
 $ ./prepare.sh
@@ -108,7 +108,7 @@ $ source gcs-venv/bin/activate
 (gcs-venv) $ vagrant up
 ```
 
-Once begin using the cluster once its up by either,
+Once begin using the cluster once it's up by either,
 - SSHing into one of the Kube nodes and running the `kubectl` commands in there
 
 ```
@@ -117,7 +117,7 @@ Once begin using the cluster once its up by either,
 
 #### Resetting the cluster
 
-If the Vagrant vms are restarted (say because of host reboot), the kubernete cluster cannot come back up. In such a case, reset the cluster and re-deploy kube and GCS.
+If the Vagrant vms are restarted (say because of host reboot), the kubernetes cluster cannot come back up. In such a case, reset the cluster and re-deploy kube and GCS.
 
 ```
 (gcs-venv) $ ansible-playbook --become vagrant-reset.yml
