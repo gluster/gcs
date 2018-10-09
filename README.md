@@ -1,6 +1,11 @@
 As of now, one can already use Gluster as storage for containers by making use of different projects available in github repositories associated with Gluster (especially GlusterD1) & Heketi through [gluster-kubernetes](https://github.com/gluster/gluster-kubernetes) . The goal of the GCS initiative is to provide a new stack ( especially with [GD2](https://github.com/gluster/glusterd2), [gluster-csi-driver](https://github.com/gluster/gluster-csi-driver) ) focused on easier integration, much more opinionated bases install, a better upgrade experience to deploy Gluster for container storage. We are primarily focused on integration with Kubernetes (k8s) through this initiative.
 
-Key projects for GCS include:
+## Quickstart - Try it out
+
+The [deploy/ directory](deploy/) contains instructions for installing GCS,
+either in a Vagrant-based test environment, or on your own cluster.
+
+## Key projects for GCS
 
 ### Glusterd2 (GD2)
 
