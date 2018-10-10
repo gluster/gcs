@@ -2,7 +2,9 @@
 
 This repository contains playbooks to deploy a GCS cluster on Kubernetes. It also contains a Vagrantfile to setup a local GCS cluster using vagrant-libvirt.
 
-> IMP: Clone this repository with submodules
+> _NOTE: The deployment works for Kubernetes 1.11 for now. Kubernetes 1.12 introduces new changes for CSI drivers, which are yet to be implemented._
+
+> _IMP: Clone this repository with submodules_
 
 ## Available playbooks
 
