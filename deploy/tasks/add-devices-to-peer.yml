@@ -2,7 +2,7 @@
 ---
 - name: GCS | GD2 Cluster | Add devices | Set facts
   set_fact:
-    kube_hostname: "{{ peer.name.split('-')[0]}}"
+    kube_hostname: "{{ peer.name.split('-')[1]}}"
 
 - name: GCS | GD2 Cluster | Add devices | Add devices for {{ kube_hostname }}
   uri:
