@@ -4,9 +4,6 @@
 driveletters = ('a'..'z').to_a
 
 Vagrant.configure("2") do |config|
-  # This Vagrantfile works with only vagrant-libvirt right now
-  # Ensure that the vagrant-libvirt plugin is present
-  config.vagrant.plugins = ["vagrant-libvirt"]
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
