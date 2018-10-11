@@ -5,5 +5,6 @@
     dns_mode: "coredns"
     docker_mount_flags: "shared"
     kube_network_plugin: "flannel"
+    kube_version: "v1.11.3"
     kubeconfig_localhost: true
     local_volumes_enabled: true
