@@ -164,9 +164,12 @@ spec:
           args:
             - "--v=5"
             - "--csi-address=$(ADDRESS)"
+            - "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)"
           env:
             - name: ADDRESS
               value: /plugin/csi.sock
+            - name: DRIVER_REG_SOCK_PATH
+              value: /var/lib/kubelet/plugins/org.gluster.glusterfs/csi.sock
             - name: KUBE_NODE_NAME
               valueFrom:
                 fieldRef:
@@ -174,6 +177,8 @@ spec:
           volumeMounts:
             - name: plugin-dir
               mountPath: /plugin
+            - name: registration-dir
+              mountPath: /registration
         - name: gluster-nodeplugin
           securityContext:
             privileged: true
@@ -208,6 +213,10 @@ spec:
         - name: pods-mount-dir
           hostPath:
             path: /var/lib/kubelet/pods
+            type: Directory
+        - name: registration-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/
             type: Directory
 
 ## Deploy GCS CSI Provisioner
