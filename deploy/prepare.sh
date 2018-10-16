@@ -29,8 +29,7 @@ EOF
 fi
 
 if [[ "${DEP_NOT_FOUND[@]}" != "" ]]; then
-  echo Please install the following packages before proceeding
-  echo "\t${DEP_NOT_FOUND[@]}"
+  echo -e "Please install the following packages before proceeding \t" ${DEP_NOT_FOUND[@]}
   exit 1
 fi
 
