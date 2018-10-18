@@ -149,3 +149,42 @@ Deploy it with,
 ```
 (gcs-venv) $ ./kubectl create -f examples/app-using-gcs-volume.yml
 ```
+
+### Accessing glustercli from glusterd2 pods
+
+- List glusterd2 pods
+
+```
+kubectl get po -ngcs --selector=app.kubernetes.io/name=glusterd2
+NAME              READY   STATUS    RESTARTS   AGE
+gluster-kube1-0   1/1     Running   0          16h
+gluster-kube2-0   1/1     Running   0          16h
+gluster-kube3-0   1/1     Running   0          16h
+```
+
+- Step inside any one of the glusterd2 pod
+
+```
+[vagrant@kube1 ~]$ kubectl exec -it gluster-kube1-0 /bin/bash -ngcs
+[root@gluster-kube1-0 /]#
+```
+
+* Get Endpoint to access glusterd2 from glustercli
+
+```
+[root@gluster-kube1-0 /]# printenv |grep GD2_CLIENTADDRESS |cut -d'=' -f2
+gluster-kube1-0.glusterd2.gcs:24007
+```
+
+- Accessing glustercli inside pod
+
+```
+[root@gluster-kube1-0 /]# glustercli peer  list --endpoints=http://gluster-kube1-0.glusterd2.gcs:24007
++--------------------------------------+---------+-----------------------------+-----------------------------+--------+-----+
+|                  ID                  |  NAME   |      CLIENT ADDRESSES       |       PEER ADDRESSES        | ONLINE | PID |
++--------------------------------------+---------+-----------------------------+-----------------------------+--------+-----+
+| 33346529-d8df-45ff-aeaf-3befed986435 | gluster-kube1-0 | gluster-kube1-0.glusterd2.gcs:24007 | gluster-kube1-0.glusterd2.gcs:24008 | yes    |  21 |
+| 4527724d-e5de-4b58-a6e8-8f15490fa6b5 | gluster-kube3-0 | gluster-kube3-0.glusterd2.gcs:24007 | gluster-kube3-0.glusterd2.gcs:24008 | yes    |  21 |
+| d35ef7e1-1846-4826-8447-2d1f92de0881 | gluster-kube2-0 | gluster-kube2-0.glusterd2.gcs:24007 | gluster-kube2-0.glusterd2.gcs:24008 | yes    |  21 |
++--------------------------------------+---------+-----------------------------+-----------------------------+--------+-----+
+```
