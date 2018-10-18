@@ -154,6 +154,16 @@ Create a config file and deploy the application along with PVC as below:
 vagrant@kube1 ~]$ kubectl create -f app-using-gcs-volume.yml
 ```
 
+### Deploying an app with GCS backed cloned volume
+
+An example config is provided for creating a snapshot of a volume and creating a PersistentVolumeClaim against GCS from the snapshot and using the claim in an app, in [examples/app-using-gcs-volume-clone.yml](examples/app-using-gcs-volume.yml)
+
+Create a config file and deploy the application as below:
+
+```
+vagrant@kube1 ~]$ kubectl create -f app-using-gcs-volume-clone.yml
+```
+
 ### Accessing glustercli from glusterd2 pods
 
 - List glusterd2 pods

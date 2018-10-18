@@ -41,5 +41,4 @@
 - import_playbook: "./deploy-k8s.yml"
   vars:
     local_release_dir: "/var/vagrant/temp"
-
 - import_playbook: "./deploy-gcs.yml"
