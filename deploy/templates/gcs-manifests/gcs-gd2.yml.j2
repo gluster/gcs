@@ -47,6 +47,8 @@ spec:
               value: "{{ gcs_gd2_clusterid }}"
             - name: GD2_CLIENTADDRESS
               value: "gluster-{{ kube_hostname }}-0.glusterd2.{{ gcs_namespace }}:24007"
+            - name: GD2_ENDPOINTS
+              value: "http://gluster-{{ kube_hostname }}-0.glusterd2.{{ gcs_namespace }}:24007"
             - name: GD2_PEERADDRESS
               value: "gluster-{{ kube_hostname }}-0.glusterd2.{{ gcs_namespace }}:24008"
             # TODO: Remove RESTAUTH false once we enable setting auth token
