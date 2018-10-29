@@ -142,12 +142,16 @@ This will create a brand new cluster. If this fails, destroy the vagrant environ
 
 ### Deploying an app with GCS backed volume
 
-An example config is provided for creating a PersistentVolumeClaim against GCS and using the claim in an app, in `examples/app-using-gcs-volume.yml`
+An example config is provided for creating a PersistentVolumeClaim against GCS and using the claim in an app, in [examples/app-using-gcs-volume.yml](examples/app-using-gcs-volume.yml)
 
-Deploy it with,
-
+ssh to the master node:
 ```
-(gcs-venv) $ ./kubectl create -f examples/app-using-gcs-volume.yml
+(gcs-venv) $ vagrant ssh kube1
+```
+
+Create a config file and deploy the application along with PVC as below:
+```
+vagrant@kube1 ~]$ kubectl create -f app-using-gcs-volume.yml
 ```
 
 ### Accessing glustercli from glusterd2 pods
