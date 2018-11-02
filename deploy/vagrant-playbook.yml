@@ -12,6 +12,12 @@
       - dm_thin_pool
 
   tasks:
+    - name: Extend root VG
+      lvg:
+        vg: atomicos
+        pvs: /dev/vda2,/dev/vdb
+        state: present
+
     - name: Extend the root LV and FS to occupy remaining space
       lvol:
         vg: atomicos
