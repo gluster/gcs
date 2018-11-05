@@ -19,8 +19,10 @@ Vagrant.configure("2") do |config|
         lv.cpus = 2
         lv.memory = 2048
 
+        lv.storage :file, :device => "vdb", :size => '20G'
+
         disks = []
-        (1..3).each do |d|
+        (2..4).each do |d|
           lv.storage :file, :device => "vd#{driveletters[d]}", :size => '1024G'
           disks.push "/dev/vd#{driveletters[d]}"
         end
