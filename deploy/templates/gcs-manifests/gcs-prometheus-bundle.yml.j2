@@ -1,0 +1,95 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gluster-prometheus
+  namespace: {{ monitoring_namespace }}
+  labels:
+    team: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: gcs
+      app.kubernetes.io/component: glusterfs
+      app.kubernetes.io/name: glusterd2-service
+  namespaceSelector:
+    matchNames: 
+      - {{ gcs_namespace }}
+  endpoints:
+  - port: metrics
+    targetPort: 8080
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: {{ monitoring_namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - services
+  - endpoints
+  - pods
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources:
+  - configmaps
+  verbs: ["get"]
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+- kind: ServiceAccount
+  name: prometheus
+  namespace: {{ monitoring_namespace }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus
+  namespace: {{ monitoring_namespace }}
+spec:
+  replicas: 2
+  serviceAccountName: prometheus
+  scrapeInterval: 5s
+  alerting:
+    alertmanagers:
+    - namespace: {{ monitoring_namespace }}
+      name: alertmanager-alert
+      port: metrics
+  serviceMonitorSelector:
+    matchLabels:
+      team: monitoring
+  ruleSelector:
+    matchLabels:
+      role: alert-rules
+      prometheus: alert
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: {{ monitoring_namespace }}
+spec:
+  type: NodePort
+  ports:
+  - name: metrics
+    nodePort: 30600
+    port: 9090
+    protocol: TCP
+    targetPort: metrics
+  selector:
+    prometheus: prometheus

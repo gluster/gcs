@@ -46,6 +46,8 @@ spec:
       protocol: TCP
       port: 24007
       targetPort: 24007
+    - name: metrics
+      port: 8080
 
 ---
 # Nodeport service for access to GD2 from outside the cluster
