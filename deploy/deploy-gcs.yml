@@ -39,6 +39,11 @@
             - gcs-etcd-cluster.yml
             - gcs-gd2-services.yml
             - gcs-csi.yml
+            - monitoring-namespace.yml
+            - gcs-prometheus-operator.yml
+            - gcs-prometheus-bundle.yml
+            - gcs-prometheus-alertmanager-cluster.yml
+            - gcs-grafana.yml
 
         - name: GCS Pre | Manifests | Create GD2 manifests
           include_tasks: tasks/create-gd2-manifests.yml
@@ -57,6 +62,11 @@
       kube:
         kubectl: "{{ kubectl }}"
         file: "{{ manifests_dir }}/gcs-namespace.yml"
+
+    - name: GCS | Namespace | Create Monitoring namespace
+      kube:
+        kubectl: "{{ kubectl }}"
+        file: "{{ manifests_dir }}/monitoring-namespace.yml"
 
     - name: GCS | ETCD Operator
       block:
@@ -174,3 +184,32 @@
           until: result.stdout|int == 3
           delay: 10
           retries: 50
+
+    - name: GCS | Prometheus Operator
+      block:
+        - name: GCS | Prometheus Operator | Deploy Prometheus Operator
+          kube:
+            kubectl: "{{ kubectl }}"
+            file: "{{ manifests_dir }}/gcs-prometheus-operator.yml"
+
+        - name: GCS | Prometheus Operator | Wait for the Prometheus Operator to become ready
+          command: "{{ kubectl }} -n{{ monitoring_namespace }} -ojsonpath='{.status.availableReplicas}' get deployment prometheus-operator"
+          register: result
+          until: result.stdout|int == 1
+          delay: 10
+          retries: 50
+
+    - name: GCS | Prometheus Objects | Deploy services, ServiceMonitor and Prometheus Object
+      kube:
+        kubectl: "{{ kubectl }}"
+        file: "{{ manifests_dir }}/gcs-prometheus-bundle.yml"
+
+    - name: GCS | Alertmanager Cluster
+      kube:
+        kubectl: "{{ kubectl }}"
+        file: "{{ manifests_dir }}/gcs-prometheus-alertmanager-cluster.yml"
+
+    - name: GCS | Grafana Dashboard | Deploy Grafana Dashboard
+      kube:
+        kubectl: "{{ kubectl }}"
+        file: "{{ manifests_dir }}/gcs-grafana.yml"
