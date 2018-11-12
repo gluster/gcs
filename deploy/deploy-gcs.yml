@@ -141,15 +141,10 @@
         - name: GCS | GD2 Cluster | Wait for glusterd2-cluster to become ready
           uri:
             url: "{{ gd2_client_endpoint }}/v1/peers"
-          register: result
-          until: result.status is defined and (result.status == 200 and result.json|length == groups['kube-node']|length)
+          register: peers_resp
+          until: peers_resp.status is defined and (peers_resp.status == 200 and peers_resp.json|length == groups['kube-node']|length)
           delay: 10
           retries: 50
-
-        - name: GCS | GD2 Cluster | Get peers in cluster
-          uri:
-            url: "{{ gd2_client_endpoint }}/v1/peers"
-          register: peers_resp
 
         - name: GCS | GD2 Cluster | Add devices
           include_tasks: ./tasks/add-devices-to-peer.yml
