@@ -192,3 +192,20 @@ gluster-kube1-0.glusterd2.gcs:24007
 | d35ef7e1-1846-4826-8447-2d1f92de0881 | gluster-kube2-0 | gluster-kube2-0.glusterd2.gcs:24007 | gluster-kube2-0.glusterd2.gcs:24008 | yes    |  21 |
 +--------------------------------------+---------+-----------------------------+-----------------------------+--------+-----+
 ```
+
+### Accessing Prometheus UI and Grafana Dashboard to view the metrics
+
+To access the Prometheus UI, load up the web browser from the host machine and go to ```http://localhost:9090/graph``` to view the prometheus UI. The available metrics can be viewed and selected from the dropdown tab and press Execute to show the values.
+
+To access the Grafana Dashboard: 
+
+1) Load up the web browser from the host machine and go to ```http://localhost:9000``` to view the Grafana UI. 
+
+2) Enter Username and password as ```admin```. 
+
+3) Select New Dashboard ( No need to add a datasource because prometheus datasource is added by default in the deployment ) --> Graph --> Panel Title --> Edit.
+
+4) Select Prometheus as the data source in the data source drop down menu.
+
+5) You can now use the expression tab to lookup metrics via autocompletion.
+
