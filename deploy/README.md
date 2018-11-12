@@ -173,17 +173,10 @@ gluster-kube3-0   1/1     Running   0          16h
 [root@gluster-kube1-0 /]#
 ```
 
-* Get Endpoint to access glusterd2 from glustercli
-
-```
-[root@gluster-kube1-0 /]# printenv |grep GD2_CLIENTADDRESS |cut -d'=' -f2
-gluster-kube1-0.glusterd2.gcs:24007
-```
-
 - Accessing glustercli inside pod
 
 ```
-[root@gluster-kube1-0 /]# glustercli peer  list --endpoints=http://gluster-kube1-0.glusterd2.gcs:24007
+[root@gluster-kube1-0 /]# glustercli peer  list
 +--------------------------------------+---------+-----------------------------+-----------------------------+--------+-----+
 |                  ID                  |  NAME   |      CLIENT ADDRESSES       |       PEER ADDRESSES        | ONLINE | PID |
 +--------------------------------------+---------+-----------------------------+-----------------------------+--------+-----+
