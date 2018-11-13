@@ -39,6 +39,9 @@
             - gcs-etcd-cluster.yml
             - gcs-gd2-services.yml
             - gcs-csi.yml
+            - gcs-storage-snapshot.yml
+            - gcs-csi-node-info-crd.yml
+            - gcs-csi-driver-registry-crd.yml
             - monitoring-namespace.yml
             - gcs-prometheus-operator.yml
             - gcs-prometheus-bundle.yml
@@ -154,6 +157,12 @@
 
     - name: GCS | CSI Driver
       block:
+        - name: GCS | CSI Node Info,CSI Driver Register | Create CRD
+          command: "{{ kubectl }} apply -f {{ manifests_dir }}/{{ item }} --validate=false"
+          with_items:
+             - "gcs-csi-node-info-crd.yml"
+             - "gcs-csi-driver-registry-crd.yml"
+          run_once: true
         - name: GCS | CSI Driver | Deploy csi driver
           kube:
             kubectl: "{{ kubectl }}"
@@ -179,6 +188,11 @@
           until: result.stdout|int == 3
           delay: 10
           retries: 50
+          
+    - name: GCS | Storage | Snapshot | Create Storage and Snapshot class
+      kube:
+          kubectl: "{{ kubectl }}"
+          file: "{{ manifests_dir }}/gcs-storage-snapshot.yml"
 
     - name: GCS | Prometheus Operator
       block:

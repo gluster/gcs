@@ -1,0 +1,51 @@
+#create a snapshot of already available cs_volume
+---
+apiVersion: snapshot.storage.k8s.io/v1alpha1
+kind: VolumeSnapshot
+metadata:
+  name: glusterfs-csi-ss
+spec:
+  snapshotClassName: glusterfs-csi-snap
+  source:
+    name: gcs-example-volume
+    kind: PersistentVolumeClaim
+
+
+#restore a PVC from snapshot
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: glusterfs-pv-restore
+spec:
+  storageClassName: glusterfs-csi
+  dataSource:
+    name: glusterfs-csi-ss
+    kind: VolumeSnapshot
+    apiGroup: snapshot.storage.k8s.io
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+
+#create an app to use restored PVC
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redis-pvc-restore
+  labels:
+    name: redis-pvc-restore
+spec:
+  containers:
+    - name: redis-pvc-restore
+      image: redis:latest
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - mountPath: /data
+          name: glusterfscsivol
+  volumes:
+    - name: glusterfscsivol
+      persistentVolumeClaim:
+        claimName: glusterfs-pv-restore

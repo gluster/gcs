@@ -18,6 +18,9 @@ rules:
   - apiGroups: [""]
     resources: ["nodes"]
     verbs: ["get", "list", "watch"]
+  - apiGroups: ["csi.storage.k8s.io"]
+    resources: ["csinodeinfos"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments"]
     verbs: ["get", "list", "watch", "update"]
@@ -63,11 +66,19 @@ spec:
       serviceAccountName: csi-attacher
       containers:
         - name: csi-attacher
-          image: quay.io/k8scsi/csi-attacher:v0.3.0
+          image: quay.io/k8scsi/csi-attacher:v0.4.0
           args:
             - "--v=5"
             - "--csi-address=$(ADDRESS)"
           env:
+            - name: MY_NAME
+              valueFrom:
+               fieldRef:
+                 fieldPath: metadata.name
+            - name: MY_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
           volumeMounts:
@@ -160,7 +171,7 @@ spec:
       serviceAccount: csi-nodeplugin
       containers:
         - name: driver-registrar
-          image: quay.io/k8scsi/driver-registrar:v0.3.0
+          image: quay.io/k8scsi/driver-registrar:v0.4.0
           args:
             - "--v=5"
             - "--csi-address=$(ADDRESS)"
@@ -244,7 +255,26 @@ rules:
     verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["events"]
-    verbs: ["list", "watch", "create", "update", "patch"]
+    verbs: ["list", "watch", "create", "update", "patch","delete","get"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list", "watch", "create", "update"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents"]
+    verbs: ["create", "get", "list", "watch", "update", "delete"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshots"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["create", "list", "watch", "delete"]
+  
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -289,13 +319,26 @@ spec:
       serviceAccountName: csi-provisioner
       containers:
         - name: csi-provisioner
-          image: quay.io/k8scsi/csi-provisioner:v0.3.0
+          image: quay.io/k8scsi/csi-provisioner:v0.4.0
           args:
             - "--provisioner=org.gluster.glusterfs"
             - "--csi-address=$(ADDRESS)"
+            - "--connection-timeout=15s"
           env:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+        - name: csi-snapshotter
+          image: quay.io/k8scsi/csi-snapshotter:v0.4.0
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--connection-timeout=15s"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          imagePullPolicy: "IfNotPresent"
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
@@ -320,13 +363,3 @@ spec:
       volumes:
         - name: socket-dir
           emptyDir:
-
-## Finally deploy the StorageClass
----
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: glusterfs-csi
-  annotations:
-    storageclass.kubernetes.io/is-default-class: "true"
-provisioner: org.gluster.glusterfs
