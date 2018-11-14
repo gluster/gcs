@@ -86,7 +86,7 @@ spec:
               mountPath: /var/lib/csi/sockets/pluginproxy/
 
         - name: glusterfs
-          image: docker.io/gluster/gluster-csi-driver:latest
+          image: docker.io/gluster/gluster-csi-driver@sha256:7c3c4b360c1341912837c736173ff874b13536abdd53eaaa35febce761363e26
           args:
             - "--nodeid=$(NODE_ID)"
             - "--endpoint=$(CSI_ENDPOINT)"
@@ -196,7 +196,7 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
             allowPrivilegeEscalation: true
-          image: docker.io/gluster/gluster-csi-driver:latest
+          image: docker.io/gluster/gluster-csi-driver@sha256:7c3c4b360c1341912837c736173ff874b13536abdd53eaaa35febce761363e26
           args:
             - "--nodeid=$(NODE_ID)"
             - "--endpoint=$(CSI_ENDPOINT)"
@@ -343,7 +343,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: gluster-provisioner
-          image: docker.io/gluster/gluster-csi-driver:latest
+          image: docker.io/gluster/gluster-csi-driver@sha256:7c3c4b360c1341912837c736173ff874b13536abdd53eaaa35febce761363e26
           args:
             - "--nodeid=$(NODE_ID)"
             - "--endpoint=$(CSI_ENDPOINT)"
