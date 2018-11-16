@@ -208,10 +208,33 @@
           delay: 10
           retries: 50
 
-    - name: GCS | Prometheus Objects | Deploy services, ServiceMonitor and Prometheus Object
-      kube:
-        kubectl: "{{ kubectl }}"
-        file: "{{ manifests_dir }}/gcs-prometheus-bundle.yml"
+    - name: GCS | Prometheus Objects 
+      block:
+        - name: Check if the Custrom Resource Definitions are set
+          command: "{{ kubectl }} get customresourcedefinitions servicemonitors.monitoring.coreos.com"
+          register: result
+          until: result.rc == 0
+          delay: 10
+          retries: 30
+
+        - name: Check if Service Monitor CRD is registered
+          command: "{{ kubectl }} get servicemonitors -n{{ monitoring_namespace }}"
+          register: result
+          until: result.rc == 0
+          delay: 10
+          retries: 30
+
+        - name: Check if Prometheus CRD object is registered
+          command: "{{ kubectl }} get Prometheus -n{{ monitoring_namespace }}"
+          register: result
+          until: result.rc == 0
+          delay: 10
+          retries: 30
+
+        - name: GCS | Prometheus Objects | Deploy services, ServiceMonitor and Prometheus Objects 
+          kube:
+            kubectl: "{{ kubectl }}"
+            file: "{{ manifests_dir }}/gcs-prometheus-bundle.yml"
 
     - name: GCS | Alertmanager Cluster
       kube:

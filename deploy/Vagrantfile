@@ -7,15 +7,15 @@ Vagrant.configure("2") do |config|
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
-  config.vm.network "forwarded_port", guest: 30600, host: 9090, host_ip: "127.0.0.1"
-  config.vm.network "forwarded_port", guest: 30800, host: 9000, host_ip: "127.0.0.1"
-
   config.vm.box = "centos/atomic-host"
   host_vars = {}
   (1..3).each do |i|
     config.vm.define vm_name = "kube#{i}" do |vm|
       vm.vm.hostname = vm_name
-
+      if i == 1
+        config.vm.network "forwarded_port", guest: 30600, host: 9090, host_ip: "127.0.0.1"
+        config.vm.network "forwarded_port", guest: 30800, host: 9000, host_ip: "127.0.0.1"
+      end
       vm.vm.provider :libvirt do |lv|
         lv.default_prefix = "gcs"
         lv.cpus = 2
