@@ -20,6 +20,15 @@ Vagrant.configure("2") do |config|
         lv.default_prefix = "gcs"
         lv.cpus = 2
         lv.memory = 2048
+        lv.nested = false
+        lv.cpu_mode = "host-passthrough"
+        lv.volume_cache = "writeback"
+        lv.graphics_type = "none"
+        lv.video_type = "vga"
+        lv.video_vram = 1024
+        # lv.usb_controller :model => "none"  # (requires vagrant-libvirt 0.44 which is not in Fedora yet)
+        lv.random :model => 'random'
+        lv.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio'
 
         lv.storage :file, :device => "vdb", :size => '20G'
 
