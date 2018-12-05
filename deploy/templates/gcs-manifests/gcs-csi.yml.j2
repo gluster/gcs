@@ -89,6 +89,7 @@ spec:
           image: docker.io/gluster/gluster-csi-driver:latest
           args:
             - "--nodeid=$(NODE_ID)"
+            - "--v=5"
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--resturl=$(REST_URL)"
           env:
@@ -199,6 +200,7 @@ spec:
           image: docker.io/gluster/gluster-csi-driver:latest
           args:
             - "--nodeid=$(NODE_ID)"
+            - "--v=5"
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--resturl=$(REST_URL)"
           env:
@@ -346,6 +348,7 @@ spec:
           image: docker.io/gluster/gluster-csi-driver:latest
           args:
             - "--nodeid=$(NODE_ID)"
+            - "--v=5"
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--resturl=$(REST_URL)"
           env:
