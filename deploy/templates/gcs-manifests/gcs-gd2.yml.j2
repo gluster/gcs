@@ -33,7 +33,7 @@ spec:
                     - {{ kube_hostname }}
       containers:
         - name: glusterd2
-          image: docker.io/gluster/glusterd2-nightly
+          image: docker.io/gluster/glusterd2-nightly@sha256:0bbdfaff774741de07bcb8cc05ba535a33cf610e723ab44e208a7aceb762999e
           livenessProbe:
             httpGet:
               path: /ping
