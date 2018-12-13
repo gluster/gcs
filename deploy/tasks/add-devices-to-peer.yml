@@ -10,8 +10,9 @@
     method: POST
     body: "{ \"device\": \"{{ disk }}\"}"
     body_format: json
+    status_code: 201
   register: res
-  until: res.status is defined and res.status == 200
+  until: res.status is defined and res.status == 201
   delay: 10
   retries: 50
   loop: "{{ hostvars[kube_hostname].gcs_disks }}"
