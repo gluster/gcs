@@ -185,7 +185,7 @@
         - name: GCS | CSI Driver | Wait for csi-nodeplugin to become available
           command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.numberAvailable} get daemonset csi-nodeplugin-glusterfsplugin"
           register: result
-          until: result.stdout|int == 3
+          until: result.stdout|int == groups['kube-node']|length
           delay: 10
           retries: 50
           
