@@ -3,6 +3,7 @@
 This repository contains playbooks to deploy a GCS cluster on Kubernetes. It also contains a Vagrantfile to setup a local GCS cluster using vagrant-libvirt.
 
 > _IMP: Clone this repository with submodules_
+> git clone --recurse-submodules -j8 git@github.com:gluster/gcs.git
 
 ## Available playbooks
 
