@@ -2,7 +2,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: gluster-prometheus
-  namespace: {{ monitoring_namespace }}
+  namespace: {{ gcs_namespace }}
   labels:
     team: monitoring
 spec:
@@ -22,7 +22,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: prometheus
-  namespace: {{ monitoring_namespace }}
+  namespace: {{ gcs_namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
@@ -54,25 +54,23 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus
-  namespace: {{ monitoring_namespace }}
+  namespace: {{ gcs_namespace }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
 metadata:
   name: prometheus
-  namespace: {{ monitoring_namespace }}
+  namespace: {{ gcs_namespace }}
 spec:
   replicas: 2
   serviceAccountName: prometheus
   scrapeInterval: 5s
   alerting:
     alertmanagers:
-    - namespace: {{ monitoring_namespace }}
+    - namespace: {{ gcs_namespace }}
       name: alertmanager-alert
       port: metrics
-  serviceMonitorSelector:
-    matchLabels:
-      team: monitoring
+  serviceMonitorSelector: {}
   ruleSelector:
     matchLabels:
       role: alert-rules
@@ -82,7 +80,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: prometheus
-  namespace: {{ monitoring_namespace }}
+  namespace: {{ gcs_namespace }}
 spec:
   type: NodePort
   ports:

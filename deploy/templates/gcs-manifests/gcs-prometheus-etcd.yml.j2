@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    k8s-app: etcd-operator
+  name: etcd-operator
+  namespace: {{ gcs_namespace }}
+spec:
+  ports:
+  - name: metrics
+    port: 8080
+  selector:
+    app.kubernetes.io/component: etcd
+    app.kubernetes.io/name: etcd-operator
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: etcd-operator
+  name: etcd-operator
+  namespace: {{ gcs_namespace }}
+spec:
+  endpoints:
+  - port: metrics
+    path: metrics
+  selector:
+    matchLabels:
+      k8s-app: etcd-operator
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: etcd-metrics
+  name: etcd-metrics
+  namespace: {{ gcs_namespace }}
+spec:
+  endpoints:
+  - port: client
+    path: metrics
+  selector:
+    matchLabels:
+      app: etcd
+      etcd_cluster: etcd
+
