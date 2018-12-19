@@ -47,6 +47,8 @@
             - gcs-prometheus-bundle.yml
             - gcs-prometheus-alertmanager-cluster.yml
             - gcs-grafana.yml
+            - gcs-operator-crd.yml
+            - gcs-operator.yml
 
         - name: GCS Pre | Manifests | Create GD2 manifests
           include_tasks: tasks/create-gd2-manifests.yml
@@ -84,6 +86,34 @@
           until: result.stdout|int == 1
           delay: 10
           retries: 50
+
+    - name: GCS | Anthill
+      block:
+        - name: GCS | Anthill | Register CRDs
+          kube:
+            kubectl: "{{ kubectl }}"
+            file: "{{ manifests_dir }}/gcs-operator-crd.yml"
+
+        - name: Wait for GlusterCluster CRD to be registered
+          command: "{{ kubectl }} get customresourcedefinitions glusterclusters.operator.gluster.org"
+          changed_when: false
+          register: result
+          until: result.rc == 0
+          delay: 10
+          retries: 30
+
+        - name: Wait for GlusterNode CRD to be registered
+          command: "{{ kubectl }} get customresourcedefinitions glusternodes.operator.gluster.org"
+          changed_when: false
+          register: result
+          until: result.rc == 0
+          delay: 10
+          retries: 30
+
+        - name: GCS | Anthill | Deploy operator
+          kube:
+            kubectl: "{{ kubectl }}"
+            file: "{{ manifests_dir }}/gcs-operator.yml"
 
     - name: GCS | ETCD Cluster
       block:
@@ -188,7 +218,7 @@
           until: result.stdout|int == groups['kube-node']|length
           delay: 10
           retries: 50
-          
+
     - name: GCS | Storage | Snapshot | Create Storage and Snapshot class
       kube:
           kubectl: "{{ kubectl }}"
@@ -208,7 +238,7 @@
           delay: 10
           retries: 50
 
-    - name: GCS | Prometheus Objects 
+    - name: GCS | Prometheus Objects
       block:
         - name: Check if the Custrom Resource Definitions are set
           command: "{{ kubectl }} get customresourcedefinitions servicemonitors.monitoring.coreos.com"
@@ -231,7 +261,7 @@
           delay: 10
           retries: 30
 
-        - name: GCS | Prometheus Objects | Deploy services, ServiceMonitor and Prometheus Objects 
+        - name: GCS | Prometheus Objects | Deploy services, ServiceMonitor and Prometheus Objects
           kube:
             kubectl: "{{ kubectl }}"
             file: "{{ manifests_dir }}/gcs-prometheus-bundle.yml"
