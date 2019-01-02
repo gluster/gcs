@@ -9,6 +9,31 @@ metadata:
     app.kubernetes.io/component: etcd
     app.kubernetes.io/name: etcd-cluster
 spec:
+  pod:
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: etcd_cluster
+                operator: In
+                values:
+                - etcd
+            topologyKey: kubernetes.io/hostname
+    etcdEnv:
+    # https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/maintenance.md#auto-compaction
+    - name: ETCD_AUTO_COMPACTION_MODE
+      value: "periodic"
+    - name: ETCD_AUTO_COMPACTION_RETENTION
+      value: "5m"
+    - name: ETCD_SNAPSHOT_COUNT
+      value: "10000"
+    - name: ETCD_QUOTA_BACKEND_BYTES
+      value: "8589934592"    # 8 * 1024 * 1024 * 1024 = 8GiB
+    - name: ETCD_MAX_REQUEST_BYTES
+      value: "5242880"   # 5 * 1024 * 1024 = 5MB
   size: 3
   version: 3.3.8
 
