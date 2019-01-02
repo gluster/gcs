@@ -1,0 +1,95 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: anthill
+rules:
+  - apiGroups: [""]
+    resources:
+      - pods
+      - services
+      - endpoints
+      - persistentvolumeclaims
+      - events
+      - configmaps
+      - secrets
+    verbs: ["create", "get", "list", "watch", "update", "delete"]
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - daemonsets
+      - replicasets
+      - statefulsets
+    verbs: ["create", "get", "list", "watch", "update", "delete"]
+  - apiGroups: ["monitoring.coreos.com"]
+    resources:
+      - servicemonitors
+    verbs: ["get", "create"]
+  - apiGroups: ["operator.gluster.org"]
+    resources:
+      - glusterclusters
+      - glusternodes
+    verbs: ["create", "get", "list", "watch", "update", "delete"]
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: anthill
+  namespace: {{ gcs_namespace }}
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: anthill
+subjects:
+  - kind: ServiceAccount
+    name: anthill
+    namespace: {{ gcs_namespace }}
+roleRef:
+  kind: Role
+  name: anthill
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anthill
+  namespace: {{ gcs_namespace }}
+  labels:
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/name: anthill
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: anthill
+  template:
+    metadata:
+      labels:
+        name: anthill
+    spec:
+      serviceAccountName: anthill
+      containers:
+        - name: anthill
+          image: quay.io/gluster/anthill:latest
+          ports:
+            - containerPort: 60000
+              name: metrics
+          command:
+            - anthill
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "anthill"
