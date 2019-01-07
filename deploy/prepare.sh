@@ -37,10 +37,6 @@ fi
 echo "Ensuring kubespray is present"
 git submodule --quiet init
 git submodule --quiet update
-cd kubespray
-#check out to support kube 1.13.1
-git checkout 39d750
-cd ..
 
 ## Create a python virtualenv for kubespray requirements
 ### REQUIRES: python-virtualenv installed for you system
