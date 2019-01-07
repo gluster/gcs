@@ -92,6 +92,7 @@ spec:
             - "--v=5"
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--resturl=$(REST_URL)"
+            - "--resttimeout=120" #glusterd2 client timeout in sec
           env:
             - name: NODE_ID
               valueFrom:
@@ -203,6 +204,7 @@ spec:
             - "--v=5"
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--resturl=$(REST_URL)"
+            - "--resttimeout=120" #glusterd2 client timeout in sec
           env:
             - name: NODE_ID
               valueFrom:
@@ -351,6 +353,7 @@ spec:
             - "--v=5"
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--resturl=$(REST_URL)"
+            - "--resttimeout=120" #glusterd2 client timeout in sec
           env:
             - name: NODE_ID
               valueFrom:
