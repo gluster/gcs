@@ -25,9 +25,9 @@
     dns_mode: "coredns"
     docker_mount_flags: "shared"
     kube_network_plugin: "flannel"
-    kube_version: "v1.12.1"
+    kube_version: "v1.13.1"
     local_volumes_enabled: true
-    kube_feature_gates: ["VolumeSnapshotDataSource=true","CSINodeInfo=true","CSIDriverRegistry=true"]
+    kube_feature_gates: ["VolumeSnapshotDataSource=true"]
 
 - name: Fetch config
   hosts: kube-master[0]
