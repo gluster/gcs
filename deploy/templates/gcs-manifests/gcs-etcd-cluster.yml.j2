@@ -32,6 +32,8 @@ spec:
       value: "10000"
     - name: ETCD_QUOTA_BACKEND_BYTES
       value: "8589934592"    # 8 * 1024 * 1024 * 1024 = 8GiB
+    - name: ETCD_MAX_REQUEST_BYTES
+      value: "5242880"   # 5 * 1024 * 1024 = 5MB
   size: 3
   version: 3.3.8
 
