@@ -1,24 +1,7 @@
+# This playbook should only contain general customization required to deploy a
+# K8S cluster ready to run GCS. Any specific customizations with respect to the
+# vagrant environment needs to be done in vagrant-playbook.
 ---
-- name: Install extra packages
-  hosts: all
-  become: true
-  tasks:
-
-  - name: Install packages
-    command: "rpm-ostree install {{ item }}"
-    with_items:
-      # socat is needed for Helm
-      - socat
-
-  - name: Reboot to make layered packages available
-    shell: sleep 2 && systemctl reboot
-    async: 1
-    poll: 0
-
-  - name: Wait for host to be available
-    wait_for_connection:
-      delay: 15
-
 - name: Deploy K8S
   import_playbook: "kubespray/cluster.yml"
   vars:

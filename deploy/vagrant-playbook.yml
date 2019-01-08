@@ -1,4 +1,6 @@
 ---
+# Any specific customization required in the vagrant environment needs to be
+# done in this play
 - name: Pre-deploy bootstrapping
   hosts: all
   become: true
@@ -38,7 +40,24 @@
         content: "{{ item }}"
       with_items: "{{ kmods }}"
 
+    - name: Install packages
+      command: "rpm-ostree install {{ item }}"
+      with_items:
+        # socat is needed for Helm
+        - socat
+
+    - name: Reboot to make layered packages available
+      shell: sleep 2 && systemctl reboot
+      async: 1
+      poll: 0
+
+    - name: Wait for host to be available
+      wait_for_connection:
+        delay: 15
+
+
 - import_playbook: "./deploy-k8s.yml"
   vars:
+    # local_release_dir needs to be set for atomic hosts.
     local_release_dir: "/var/vagrant/temp"
 - import_playbook: "./deploy-gcs.yml"
