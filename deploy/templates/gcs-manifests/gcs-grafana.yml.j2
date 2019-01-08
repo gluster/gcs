@@ -13,8 +13,8 @@ data:
     datasources:
     - name: Prometheus
       type: prometheus
-      url: http://localhost:9090
-      access: direct
+      url: http://prometheus.gcs.svc:9090
+      access: proxy
       basicAuth: false
 ---
 apiVersion: extensions/v1beta1
@@ -57,6 +57,12 @@ spec:
         - mountPath: /etc/grafana/provisioning/datasources
           name: data
           readOnly: false
+        - mountPath: /etc/grafana/provisioning/dashboards
+          name: grafana-dashboards
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/grafana-dashboard-k8s-storage-resources-glusterfs-pv
+          name: grafana-dashboard-k8s-storage-resources-glusterfs-pv
+          readOnly: false
       restartPolicy: Always
       securityContext: {}
       terminationGracePeriodSeconds: 30
@@ -67,6 +73,12 @@ spec:
              items:
               - key: config
                 path: datasource.yml
+        - configMap:
+            name: grafana-dashboards
+          name: grafana-dashboards
+        - configMap:
+            name: grafana-dashboard-k8s-storage-resources-glusterfs-pv
+          name: grafana-dashboard-k8s-storage-resources-glusterfs-pv
 ---
 apiVersion: v1
 kind: Service
@@ -83,3 +95,25 @@ spec:
     targetPort: 3000
   selector:
     app: grafana
+---
+apiVersion: v1
+data:
+  dashboards.yaml: |-
+    {
+        "apiVersion": 1,
+        "providers": [
+            {
+                "folder": "",
+                "name": "0",
+                "options": {
+                    "path": "/grafana-dashboard-definitions/0"
+                },
+                "orgId": 1,
+                "type": "file"
+            }
+        ]
+    }
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: gcs
