@@ -47,6 +47,7 @@
             - gcs-grafana.yml
             - gcs-operator-crd.yml
             - gcs-operator.yml
+            - gcs-mixins.yml
 
         - name: GCS Pre | Manifests | Create GD2 manifests
           include_tasks: tasks/create-gd2-manifests.yml
@@ -263,7 +264,13 @@
         kubectl: "{{ kubectl }}"
         file: "{{ manifests_dir }}/gcs-prometheus-alertmanager-cluster.yml"
 
+    - name: GCS | Gluster Mixins | Deploy Grafana Dashboard and Prometheus Alert Rules
+      kube:
+        kubectl: "{{ kubectl }}"
+        file: "{{ manifests_dir }}/gcs-mixins.yml"
+
     - name: GCS | Grafana Dashboard | Deploy Grafana Dashboard
       kube:
         kubectl: "{{ kubectl }}"
         file: "{{ manifests_dir }}/gcs-grafana.yml"
+
