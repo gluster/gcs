@@ -40,10 +40,14 @@
             - gcs-gd2-services.yml
             - gcs-csi.yml
             - gcs-storage-snapshot.yml
-            - monitoring-namespace.yml
             - gcs-prometheus-operator.yml
             - gcs-prometheus-bundle.yml
             - gcs-prometheus-alertmanager-cluster.yml
+            - gcs-prometheus-operator-metrics.yml
+            - gcs-prometheus-kube-state-metrics.yml
+            - gcs-prometheus-node-exporter.yml
+            - gcs-prometheus-kube-metrics.yml
+            - gcs-prometheus-etcd.yml
             - gcs-grafana.yml
             - gcs-operator-crd.yml
             - gcs-operator.yml
@@ -65,11 +69,6 @@
       kube:
         kubectl: "{{ kubectl }}"
         file: "{{ manifests_dir }}/gcs-namespace.yml"
-
-    - name: GCS | Namespace | Create Monitoring namespace
-      kube:
-        kubectl: "{{ kubectl }}"
-        file: "{{ manifests_dir }}/monitoring-namespace.yml"
 
     - name: GCS | ETCD Operator
       block:
@@ -224,7 +223,7 @@
             file: "{{ manifests_dir }}/gcs-prometheus-operator.yml"
 
         - name: GCS | Prometheus Operator | Wait for the Prometheus Operator to become ready
-          command: "{{ kubectl }} -n{{ monitoring_namespace }} -ojsonpath='{.status.availableReplicas}' get deployment prometheus-operator"
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath='{.status.availableReplicas}' get deployment prometheus-operator"
           register: result
           until: result.stdout|int == 1
           delay: 10
@@ -240,23 +239,48 @@
           retries: 30
 
         - name: Check if Service Monitor CRD is registered
-          command: "{{ kubectl }} get servicemonitors -n{{ monitoring_namespace }}"
+          command: "{{ kubectl }} get servicemonitors -n{{ gcs_namespace }}"
           register: result
           until: result.rc == 0
           delay: 10
           retries: 30
 
         - name: Check if Prometheus CRD object is registered
-          command: "{{ kubectl }} get Prometheus -n{{ monitoring_namespace }}"
+          command: "{{ kubectl }} get Prometheus -n{{ gcs_namespace }}"
           register: result
           until: result.rc == 0
           delay: 10
           retries: 30
 
-        - name: GCS | Prometheus Objects | Deploy services, ServiceMonitor and Prometheus Objects
+        - name: GCS | Prometheus Objects | Deploy services, ServiceMonitor and Prometheus Objects for Gluster Storage Monitoring
           kube:
             kubectl: "{{ kubectl }}"
             file: "{{ manifests_dir }}/gcs-prometheus-bundle.yml"
+
+        - name: GCS | Kube-State-Metrics Exporter Deployment and corresponding Prometheus Objects
+          kube:
+            kubectl: "{{ kubectl }}"
+            file: "{{ manifests_dir }}/gcs-prometheus-kube-state-metrics.yml"
+
+        - name: GCS | Prometheus Objects in order to monitor Kubelet, APIServer and CoreDNS
+          kube:
+            kubectl: "{{ kubectl }}"
+            file: "{{ manifests_dir }}/gcs-prometheus-kube-metrics.yml"
+
+        - name: GCS | Prometheus Objects in order to monitor etcd operator and the etcd cluster
+          kube:
+            kubectl: "{{ kubectl }}"
+            file: "{{ manifests_dir }}/gcs-prometheus-etcd.yml"
+
+        - name: GCS | Node-Exporter Deployment and corresponding Prometheus Objects
+          kube:
+            kubectl: "{{ kubectl }}"
+            file: "{{ manifests_dir }}/gcs-prometheus-node-exporter.yml"
+
+        - name: GCS | Prometheus Objects for monitoring the Prometheus Operator (meta-monitoring)
+          kube:
+            kubectl: "{{ kubectl }}"
+            file: "{{ manifests_dir }}/gcs-prometheus-operator-metrics.yml"
 
     - name: GCS | Alertmanager Cluster
       kube:
