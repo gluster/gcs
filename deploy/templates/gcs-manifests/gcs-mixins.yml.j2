@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gluster-mixins
+  namespace: {{ gcs_namespace }}
+spec:
+  template:
+    spec:
+      containers:
+      - name: gluster-mixins
+        image: quay.io/gluster/gluster-mixins:latest
+      restartPolicy: Never
+      serviceAccountName: gluster-mixins
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: gluster-mixins
+  namespace: {{ gcs_namespace }}
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gluster-mixins
+  namespace: {{ gcs_namespace }}
+rules:
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - prometheusrules
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: gluster-mixins
+  namespace: {{ gcs_namespace }}
+subjects:
+- kind: ServiceAccount
+  name: gluster-mixins
+  namespace: {{ gcs_namespace }}
+roleRef:
+  kind: Role
+  name: gluster-mixins
+  apiGroup: rbac.authorization.k8s.io
+
