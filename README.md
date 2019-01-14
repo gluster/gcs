@@ -44,6 +44,12 @@ As k8s ecosystem provides its own native monitoring mechanisms, we intend to hav
 
 More details on this can be found at: https://lists.gluster.org/pipermail/gluster-users/2018-July/034435.html
 
+### gluster-mixins
+Repo: https://github.com/gluster/gluster-mixins
+
+A set of Grafana dashboards and Prometheus alerts for Gluster.
+
+The scope of this project is to provide Gluster specific Grafana dashboard configs and Prometheus rule files using Prometheus Mixins.
 
 ### Gluster-Containers
 
