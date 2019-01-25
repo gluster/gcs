@@ -19,7 +19,7 @@ spec:
 ```
 
 ```bash
-kubectl apply -f pvc-gpv-1.yaml
+kubectl create -f pvc-gpv-1.yaml
 ```
 
 Individual Gluster volumes for each request.

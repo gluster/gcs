@@ -19,7 +19,7 @@ spec:
 ```
 
 ```bash
-kubectl apply -f pvc-gpv-2.yaml
+kubectl create -f pvc-gpv-2.yaml
 ```
 
 Light weight volumes for RWO use case

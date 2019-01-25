@@ -19,7 +19,7 @@ spec:
 ```
 
 ```
-kube create -f pvc-gpv-3.yaml
+kubectl create -f pvc-gpv-3.yaml
 ```
 
 Power of replica 3 with only two data centers
