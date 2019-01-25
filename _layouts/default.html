@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        {% if page.title %}
+        <title>{{ page.title }} - {{ site.title }}</title>
+        {% else %}
+        <title>{{ site.title }} - {{ site.subtitle }}</title>
+        {% endif %}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="{{ site.baseurl }}/images/fav.png" rel="icon" type="image/x-icon" />
+        <link rel="apple-touch-icon" href="{{ site.baseurl }}/images/fav.png" />
+        <meta property="og:title" content="{{ page.title }}"/>
+        <meta property="twitter:title" content="{{ page.title }}"/>
+        <meta name="description" content="{{ page.title }}"/>
+        <meta property="og:description" content="{{ page.title }}"/>
+        <meta property="twitter:description" content="{{ page.title }}"/>
+        <meta property="og:url" content="{{ page.url }}" />
+        <meta property="twitter:url" content="{{ page.url }}" />
+
+        <link rel="stylesheet" href="{{ site.baseurl }}/css/pure-min.css"/>
+        <!--[if lte IE 8]>
+            <link rel="stylesheet" href="{{ site.baseurl }}/css/grids-responsive-old-ie-min.css">
+        <![endif]-->
+        <!--[if gt IE 8]><!-->
+        <link rel="stylesheet" href="{{ site.baseurl }}/css/grids-responsive-min.css">
+        <!--<![endif]-->
+        <link rel="stylesheet" href="{{ site.baseurl }}/css/glustercs.css"/>
+        <link rel="stylesheet" href="{{ site.baseurl }}/css/pygment-emacs-highlight.css"/>
+    </head>
+    <body>
+        <div class="header-container">
+            <div class="header container">
+                <div class="pure-g">
+                    <div class="pure-u-1 pure-u-md-2-5">
+                        <div class="title-container">
+                            <a href="{{ site.baseurl }}/"><img class="logo" src="{{ site.baseurl }}/images/logo.png"/></a>
+                            <span>Gluster for Container Storage</span>
+                        </div>
+                    </div>
+                    <div class="pure-u-1 pure-u-md-3-5">
+                        <div class="menu-container">
+                            {% if page.url contains "/about" %}
+                            <a href="{{ site.baseurl }}/about" class="selected">about</a>
+                            {% else %}
+                            <a href="{{ site.baseurl }}/about">about</a>
+                            {% endif %}
+
+                            {% if page.url contains "/blog" %}
+                            <a href="{{ site.baseurl }}/blog" class="selected">blog</a>
+                            {% else %}
+                            <a href="{{ site.baseurl }}/blog">blog</a>
+                            {% endif %}
+
+                            {% if page.url contains "/doc" %}
+                            <a href="{{ site.baseurl }}/doc" class="selected">doc</a>
+                            {% else %}
+                            <a href="{{ site.baseurl }}/doc">doc</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{ content }}
+        <footer>
+            <div class="footer-container">
+                <div class="container">
+                    <div class="pure-g">
+                        <div class="pure-u-1 pure-u-md-1-5">
+                            <div class="projects-box">
+                                <strong class="title">Projects</strong>
+                                {% for link in site.projects %}
+                                <a target="blank" href="{{ link[1] }}">{{ link[0] }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="pure-u-1 pure-u-md-1-5">
+                            <div class="projects-box">
+                                <strong class="title">Menu</strong>
+                                <a target="blank" href="{{ site.baseurl }}/about">about</a>
+                                <a target="blank" href="{{ site.baseurl }}/blog">blog</a>
+                                <a target="blank" href="{{ site.baseurl }}/doc">doc</a>
+                                <a target="blank" href="https://www.gluster.org">gluster.org</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="copyright">Copyright &copy; 2019, Red Hat, Inc. All rights reserved.</div>
+                </div>
+            </div>
+        </footer>
+
+        {% if site.google_analytics_code != "" %}
+        <script type="text/javascript">
+         var _gaq = _gaq || [];
+         _gaq.push(['_setAccount', '{{ site.google_analytics_code }}']);
+         _gaq.push(['_trackPageview']);
+         (function() {
+             var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+             ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+         })();
+        </script>
+        {% endif %}
+    </body>
+</html>
