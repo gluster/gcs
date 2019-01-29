@@ -205,11 +205,13 @@ To access the Grafana Dashboard:
 
 1) Load up the web browser from the host machine and go to ```http://localhost:9000``` to view the Grafana UI. 
 
-2) Enter Username and password as ```admin```. 
+2) Enter Username and password as ```admin```.
 
-3) Select New Dashboard ( No need to add a datasource because prometheus datasource is added by default in the deployment ) --> Graph --> Panel Title --> Edit.
+3) Now you should be able to see the dashboards that gcs provides by default. The default gcs dashboard and alert configuration is provided by the [gluster mixins](https://github.com/gluster/gluster-mixins) project. If there is a need to create additional dashboards please follow steps 4) and 5).
 
-4) Select Prometheus as the data source in the data source drop down menu.
+4) Select New Dashboard ( No need to add a datasource because prometheus datasource is added by default in the deployment ) --> Graph --> Panel Title --> Edit.
 
-5) You can now use the expression tab to lookup metrics via autocompletion.
+5) Select Prometheus as the data source in the data source drop down menu.
+
+6) You can now use the expression tab to lookup metrics via autocompletion.
 
