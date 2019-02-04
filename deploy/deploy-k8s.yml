@@ -21,3 +21,21 @@
         dest: ./kubeconfig
         flat: yes
         src: /root/.kube/config
+
+- name: Copy kube config for vagrant user
+  hosts: kube-master
+  remote_user: vagrant
+  tasks:
+    - name: Create a directory
+      file:
+         path: /home/vagrant/.kube
+         state: directory
+         group: vagrant
+         owner: vagrant
+         mode: 755
+
+    - name: Copy kube config for vagrant user
+      copy:
+        remote_src: yes
+        src: /etc/kubernetes/admin.conf
+        dest: /home/vagrant/.kube/config
