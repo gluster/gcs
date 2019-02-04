@@ -40,7 +40,7 @@ Kube nodes: 3<br/>
    `https://github.com/gluster/gcs/blob/master/deploy/examples/inventory-gcs-kubespray.example`
 
    We will be deploying GCS after deploying kubernetes so we will have to provide GCS
-   nodes in the invntory file. Also, we will mention the devices that we want to use to create volumes.
+   nodes in the inventory file. Also, we will mention the devices that we want to use to create volumes.
    Since we are using only 3 nodes we will provide devices for all the 3 nodes and mention
    all the nodes in the gcs nodes.
     ```
@@ -58,8 +58,8 @@ Kube nodes: 3<br/>
     [kube-master]
     kube1
 
-    ## Hosts that will be kuberenetes nodes
-    [kube-node
+    ## Hosts that will be kubernetes nodes
+    [kube-node]
     kube1
     kube2
     kube3
@@ -107,60 +107,13 @@ All the pods should be in `Running` state.
 
 ### Steps to create volume from kubernetes.
 
-All commands are to be executed on the master node.<br />
-1. Create a yaml file of the format presented below.<br />
-   ```
-   ---
-   kind: PersistentVolumeClaim
-   apiVersion: v1
-   metadata:
-      name: gcs-pvc
-   spec:
-      storageClassName: glusterfs-csi
-      accessModes:
-         - ReadWriteMany
-      resources:
-        requests:
-           storage: 2Gi
-   ```
-   `gcs-pvc` is name of the pvc that is to be created, and the size of volume is `2Gi`.
-   Name of file : pvc.yaml
+follow
+[glusterfs](https://github.com/gluster/gluster-csi-driver/blob/master/README.md#create-a-glusterfs-storage-class-rwx)
+to create and bind RWX PVC
 
-2. To create PVC, run the following command.<br />
-   `$ kubectl create -f pvc.yaml`
-
-3. To check whether the PVC is created or not run the following command.
-   `$ kubectl get pvc`
-
-   If the PVC is in BOUND state then the volume is created and can be used now.
-
-#### Creating parallel PVCs:
-
-To create parallel PVCs, run the "pvc create" command in loop without waiting for the previous PVC to be in BOUND state. You will have to change the name of pvc in the pvc.yaml file to create a new pvc.<br />
-
-To create parallel PVC using python:<br />
-```
-import re
-import os
-for i in range(1, 500):
-    # Changing name of PVC before creating. 
-    fp = open(r'pvc.yaml', 'r')
-    new_name = 'gcs-pvc' + str(i)
-    replace_data = fp.read().replace('gcs-pvc', new_name)
-    fp.seek(0,0)
-    fw = open(r'pvc.yaml', 'w')
-    fw.write(replace_data)
-    fw.seek(0,0)
-    # Create PVC
-    os.system('kubectl create -f pvc.yaml')
-    # Renaming PVC back to original name
-    fp = open(r'pvc.yaml', 'r')
-    replace_data = fp.read().replace(new_name, 'gcs-pvc')
-    fp.seek(0, 0)
-    fw = open(r'pvc.yaml', 'w')
-    fw.write(replace_data)
-    fw.seek(0, 0)
-```
+follow
+[gluster-virtblock](https://github.com/gluster/gluster-csi-driver/blob/master/README.md#create-a-gluster-virtual-block-storage-class)
+to create and bind RWO PVC
 
 ### Scale Testing results:
 
@@ -182,15 +135,21 @@ To remove the kubernetes setup, run:<br />
 
 * If deploying kubernetes fails with error: `Failure: "No package docker-ce available.` <br />
   Then one must manually install docker-ce on the system.
-  ##### In Centos:<br />
-  `$ yum install docker` <br />
-  `$ systemctl status docker  #To check whether docker is runnning or not` <br />
+  ##### In Centos:
+
+  ```
+  $ yum install docker
+  $ systemctl status docker (to check whether docker is runnning or not)
+  ```
+
   ##### In Fedora
+
   ```
   $ sudo dnf -y install dnf-plugins-core
   $ sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
   $ sudo dnf config-manager --set-enabled docker-ce-edge
   $ sudo dnf config-manager --set-enabled docker-ce-test
   $ sudo dnf install docker-ce
+  $ sudo systemctl enable docker
   $ sudo systemctl start docker
   ```
