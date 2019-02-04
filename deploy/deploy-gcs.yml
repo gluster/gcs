@@ -38,8 +38,10 @@
             - gcs-etcd-operator.yml
             - gcs-etcd-cluster.yml
             - gcs-gd2-services.yml
-            - gcs-csi.yml
+            - gcs-fs-csi.yml
             - gcs-storage-snapshot.yml
+            - gcs-virtblock-csi.yml
+            - gcs-storage-virtblock.yml
             - gcs-prometheus-operator.yml
             - gcs-prometheus-bundle.yml
             - gcs-prometheus-alertmanager-cluster.yml
@@ -188,7 +190,7 @@
         - name: GCS | CSI Driver | Deploy csi driver
           kube:
             kubectl: "{{ kubectl }}"
-            file: "{{ manifests_dir }}/gcs-csi.yml"
+            file: "{{ manifests_dir }}/gcs-fs-csi.yml"
 
         - name: GCS | CSI Driver | Wait for csi-provisioner to become available
           command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.readyReplicas} get statefulset csi-provisioner-glusterfsplugin"
@@ -215,6 +217,39 @@
       kube:
           kubectl: "{{ kubectl }}"
           file: "{{ manifests_dir }}/gcs-storage-snapshot.yml"
+
+    - name: GCS | Virtual Block CSI Driver
+      block:
+        - name: GCS | Virtual Block CSI Driver | Deploy virtual block csi driver
+          kube:
+            kubectl: "{{ kubectl }}"
+            file: "{{ manifests_dir }}/gcs-virtblock-csi.yml"
+
+        - name: GCS | Virtual Block CSI Driver | Wait for virtual block csi-provisioner to become available
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.readyReplicas} get statefulset csi-glustervirtblock-provisioner"
+          register: result
+          until: result.stdout|int == 1
+          delay: 10
+          retries: 50
+
+        - name: GCS | Virtual Block CSI Driver | Wait for virtual block csi-attacher to become available
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.readyReplicas} get statefulset csi-glustervirtblock-attacher"
+          register: result
+          until: result.stdout|int == 1
+          delay: 10
+          retries: 50
+
+        - name: GCS | Virtual Block CSI Driver | Wait for virtual block csi-nodeplugin to become available
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.numberAvailable} get daemonset csi-glustervirtblock-nodeplugin"
+          register: result
+          until: result.stdout|int == groups['kube-node']|length
+          delay: 10
+          retries: 50
+
+    - name: GCS | Virtual Block Storage | Create Virtual Block Storage class
+      kube:
+          kubectl: "{{ kubectl }}"
+          file: "{{ manifests_dir }}/gcs-storage-virtblock.yml"
 
     - name: GCS | Prometheus Operator
       block:

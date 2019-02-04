@@ -1,0 +1,247 @@
+## Deploy Gluster Virtual Block CSI attacher
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: csi-glustervirtblock-attacher
+  namespace: {{ gcs_namespace }}
+  labels:
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: csi-driver
+    app.kubernetes.io/name: csi-attacher
+spec:
+  serviceName: csi-attacher
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: gcs
+      app.kubernetes.io/component: csi-driver
+      app.kubernetes.io/name: csi-attacher
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: gcs
+        app.kubernetes.io/component: csi-driver
+        app.kubernetes.io/name: csi-attacher
+    spec:
+      serviceAccountName: csi-attacher
+      containers:
+        - name: csi-attacher
+          image: quay.io/k8scsi/csi-attacher:v1.0.1
+          args:
+            - "--v=5"
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: MY_NAME
+              valueFrom:
+               fieldRef:
+                 fieldPath: metadata.name
+            - name: MY_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+
+        - name: glusterfs
+          image: docker.io/gluster/glustervirtblock-csi-driver:latest
+          args:
+            - "--nodeid=$(NODE_ID)"
+            - "--v=5"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--resturl=$(REST_URL)"
+            - "--resttimeout=120" #glusterd2 client timeout in sec
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://plugin/csi.sock
+            - name: REST_URL
+              value: http://glusterd2-client.{{ gcs_namespace }}:24007
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /plugin
+      volumes:
+        - name: socket-dir
+          emptyDir:
+
+## Deploy Gluster Virtual Block CSI NodePlugin
+---
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: csi-glustervirtblock-nodeplugin
+  namespace: {{ gcs_namespace }}
+  labels:
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: csi-driver
+    app.kubernetes.io/name: csi-nodeplugin
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: gcs
+      app.kubernetes.io/component: csi-driver
+      app.kubernetes.io/name: csi-nodeplugin
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: gcs
+        app.kubernetes.io/component: csi-driver
+        app.kubernetes.io/name: csi-nodeplugin
+      namespace: {{ gcs_namespace }}
+    spec:
+      serviceAccount: csi-nodeplugin
+      containers:
+        - name: csi-node-driver-registrar
+          image: quay.io/k8scsi/csi-node-driver-registrar:v1.0.1
+          args:
+            - "--v=5"
+            - "--csi-address=$(ADDRESS)"
+            - "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "rm -rf /registration/org.gluster.glustervirtblock /registration/org.gluster.glustervirtblock-reg.sock"]
+          env:
+            - name: ADDRESS
+              value: /plugin/csi.sock
+            - name: DRIVER_REG_SOCK_PATH
+              value: /var/lib/kubelet/plugins_registry/org.gluster.glusterfs/csi.sock
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /plugin
+            - name: registration-dir
+              mountPath: /registration
+        - name: glustervirtblock-nodeplugin
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["CAP_MKNOD", "CAP_SYS_ADMIN", "SYS_ADMIN"]
+            allowPrivilegeEscalation: true
+          image: docker.io/gluster/glustervirtblock-csi-driver:latest
+          args:
+            - "--nodeid=$(NODE_ID)"
+            - "--v=5"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--resturl=$(REST_URL)"
+            - "--resttimeout=120" #glusterd2 client timeout in sec
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://plugin/csi.sock
+            - name: REST_URL
+              value: http://glusterd2-client.{{ gcs_namespace }}:24007
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /plugin
+            - name: pods-mount-dir
+              mountPath: /var/lib/kubelet/pods
+              mountPropagation: "Bidirectional"
+      volumes:
+        - name: plugin-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins_registry/org.gluster.glustervirtblock
+            type: DirectoryOrCreate
+        - name: pods-mount-dir
+          hostPath:
+            path: /var/lib/kubelet/pods
+            type: Directory
+        - name: registration-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins_registry/
+            type: Directory
+
+## Deploy Gluster Virtual block CSI Provisioner
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: csi-glustervirtblock-provisioner
+  namespace: {{ gcs_namespace }}
+  labels:
+    app.kubernetes.io/part-of: gcs
+    app.kubernetes.io/component: csi-driver
+    app.kubernetes.io/name: csi-provisioner
+spec:
+  serviceName: csi-glustervirtblock-provisioner
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: gcs
+      app.kubernetes.io/component: csi-driver
+      app.kubernetes.io/name: csi-provisioner
+  template:
+    metadata:
+      name: csi-provisioner
+      namespace: {{ gcs_namespace }}
+      labels:
+        app.kubernetes.io/part-of: gcs
+        app.kubernetes.io/component: csi-driver
+        app.kubernetes.io/name: csi-provisioner
+    spec:
+      serviceAccountName: csi-provisioner
+      containers:
+        - name: csi-provisioner
+          image: quay.io/k8scsi/csi-provisioner:v1.0.1
+          args:
+            - "--provisioner=org.gluster.glustervirtblock"
+            - "--csi-address=$(ADDRESS)"
+            - "--connection-timeout=15s"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+        - name: csi-cluster-driver-registrar
+          image: quay.io/k8scsi/csi-cluster-driver-registrar:v1.0.1
+          args:
+            - "--v=5"
+            - "--pod-info-mount-version=\"v1\""
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+        - name: glustervirtblock-provisioner
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["CAP_SYS_ADMIN", "SYS_ADMIN"]
+            allowPrivilegeEscalation: true
+          image: docker.io/gluster/glustervirtblock-csi-driver:latest
+          args:
+            - "--nodeid=$(NODE_ID)"
+            - "--v=5"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--resturl=$(REST_URL)"
+            - "--resttimeout=120" #glusterd2 client timeout in sec
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://plugin/csi.sock
+            - name: REST_URL
+              value: http://glusterd2-client.{{ gcs_namespace }}:24007
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /plugin
+      volumes:
+        - name: socket-dir
+          emptyDir:

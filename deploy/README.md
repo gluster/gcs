@@ -24,7 +24,8 @@ This playbook deploys GCS on a Kubernetes cluster. All of GCS, except for the St
 - etcd-cluster with 3 nodes
 - glusterd2-cluster with a pod on each kube node and configured to use the deployed etcd-cluster
 - glusterd2-client service providing a single rest access point to GD2
-- csi-driver (provisioner, nodeplugin, attacher) configured to use glusterd2-client service to reach GD2
+- glusterfs-csi-driver configured to use glusterd2-client service to reach GD2 volume management APIs
+- glustervirtblock-csi-driver configured to use glusterd2-client service to reach GD2 virtblock management plugin APIs
 
 > NOTE: The glusterd2-cluster deployment is unsecure currently, with ReST API auth disabled and without any TLS. This leaves the cluster open to direct access by other applications on the Kubernetes cluster.
 
