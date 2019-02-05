@@ -3,7 +3,6 @@ type: feature
 title: Thin Arbiter Volumes
 ---
 ```yaml
----
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -22,5 +21,4 @@ spec:
 kubectl create -f pvc-gpv-3.yaml
 ```
 
-Power of replica 3 with only two data centers
-
+Power of high availability with only two data centers.

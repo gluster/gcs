@@ -33,11 +33,13 @@ body{
 }
 .showcase-box img{
     width: 100%;
+    margin-bottom: 10px;
 }
 .showcase-title{
     padding-bottom: 0px;
     font-size: 28px;
     color: #b88f4d;
+    height: 65px;
 }
 .showcase-text{
     color: #55473a;
@@ -221,4 +223,21 @@ body{
 
 .content img {
     max-width: 100%;
+}
+
+.content blockquote {
+    border-left: 10px solid #ddd;
+    padding-left: 5px;
+    margin-left: 0;
+    color: #333;
+}
+.content .dt-published{
+    color: #333;
+}
+.content .p-author{
+    font-weight: bold;
+}
+
+.content .post-meta{
+    margin-bottom: 30px;
 }

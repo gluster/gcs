@@ -4,7 +4,6 @@ title: Block Volumes
 ---
 
 ```yaml
----
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:

@@ -26,7 +26,7 @@ twitter_username: jekyllrb
 github_username:  jekyll
 permalink: /blog/:title
 future: true
-google_analytics_code: ""
+google_analytics_code: "UA-133939442-1"
 
 projects:
   GlusterCS: https://github.com/gluster/gcs

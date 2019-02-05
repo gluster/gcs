@@ -25,17 +25,13 @@ Included components:
 * [Gluster-Mixins](https://github.com/gluster/gluster-mixins/)
 
 For more details on the specific content of this release please refer
-[3].
+[here](https://waffle.io/gluster/gcs?label=GCS%2F0.5)(search for
+‘Done’ lane)
 
-If you are interested in contributing, please see [4] or contact the
-gluster-devel mailing list. We’re always interested in any bugs that
-you find, pull requests for new features and your feedback.
+If you are interested in contributing, please see
+[here](https://github.com/gluster/gcs) or contact the gluster-devel
+mailing list. We’re always interested in any bugs that you find, pull
+requests for new features and your feedback.
 
-Regards,
-
+Regards,  
 Team GCS
-
-1. [GCS Releases](https://github.com/gluster/gcs/releases)
-2. [GCS Deployment](https://github.com/gluster/gcs/tree/master/deploy)
-3. [GCS Waffle Board](https://waffle.io/gluster/gcs?label=GCS%2F0.5) – search for ‘Done’ lane
-4. [GCS](https://github.com/gluster/gcs)
