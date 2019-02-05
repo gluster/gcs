@@ -1,0 +1,7 @@
+## Deploy the Gluster Virtual Block StorageClass
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: glustervirtblock-csi
+provisioner: org.gluster.glustervirtblock
