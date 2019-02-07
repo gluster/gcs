@@ -66,6 +66,8 @@ spec:
               readOnly: true
             - name: gluster-lvm
               mountPath: "/run/lvm"
+            - name: gluster-udev
+              mountPath: "/run/udev"
             - name: gluster-kmods
               mountPath: "/usr/lib/modules"
               readOnly: true
@@ -83,6 +85,9 @@ spec:
         - name: gluster-lvm
           hostPath:
             path: "/run/lvm"
+        - name: gluster-udev
+          hostPath:
+            path: "/run/udev"
         - name: gluster-kmods
           hostPath:
             path: "/usr/lib/modules"
