@@ -42,7 +42,7 @@ roleRef:
 kind: StatefulSet
 apiVersion: apps/v1
 metadata:
-  name: csi-attacher-glusterfsplugin
+  name: csi-glusterfsplugin-attacher
   namespace: {{ gcs_namespace }}
   labels:
     app.kubernetes.io/part-of: gcs
@@ -144,7 +144,7 @@ roleRef:
 kind: DaemonSet
 apiVersion: apps/v1
 metadata:
-  name: csi-nodeplugin-glusterfsplugin
+  name: csi-glusterfsplugin-nodeplugin
   namespace: {{ gcs_namespace }}
   labels:
     app.kubernetes.io/part-of: gcs
@@ -298,14 +298,14 @@ roleRef:
 kind: StatefulSet
 apiVersion: apps/v1
 metadata:
-  name: csi-provisioner-glusterfsplugin
+  name: csi-glusterfsplugin-provisioner
   namespace: {{ gcs_namespace }}
   labels:
     app.kubernetes.io/part-of: gcs
     app.kubernetes.io/component: csi-driver
     app.kubernetes.io/name: csi-provisioner
 spec:
-  serviceName: csi-provisioner-glusterfsplugin
+  serviceName: csi-glusterfsplugin-provisioner
   replicas: 1
   selector:
     matchLabels:

@@ -193,21 +193,21 @@
             file: "{{ manifests_dir }}/gcs-fs-csi.yml"
 
         - name: GCS | CSI Driver | Wait for csi-provisioner to become available
-          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.readyReplicas} get statefulset csi-provisioner-glusterfsplugin"
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.readyReplicas} get statefulset csi-glusterfsplugin-provisioner"
           register: result
           until: result.stdout|int == 1
           delay: 10
           retries: 50
 
         - name: GCS | CSI Driver | Wait for csi-attacher to become available
-          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.readyReplicas} get statefulset csi-attacher-glusterfsplugin"
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.readyReplicas} get statefulset csi-glusterfsplugin-attacher"
           register: result
           until: result.stdout|int == 1
           delay: 10
           retries: 50
 
         - name: GCS | CSI Driver | Wait for csi-nodeplugin to become available
-          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.numberAvailable} get daemonset csi-nodeplugin-glusterfsplugin"
+          command: "{{ kubectl }} -n{{ gcs_namespace }} -ojsonpath={.status.numberAvailable} get daemonset csi-glusterfsplugin-nodeplugin"
           register: result
           until: result.stdout|int == groups['kube-node']|length
           delay: 10
