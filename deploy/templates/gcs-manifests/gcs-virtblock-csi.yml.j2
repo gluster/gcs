@@ -46,7 +46,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
 
-        - name: glusterfs
+        - name: glustervirtblock-attacher
           image: docker.io/gluster/glustervirtblock-csi-driver:latest
           args:
             - "--nodeid=$(NODE_ID)"
