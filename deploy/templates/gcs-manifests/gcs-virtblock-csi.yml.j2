@@ -144,12 +144,17 @@ spec:
             - name: REST_URL
               value: http://glusterd2-client.{{ gcs_namespace }}:24007
           volumeMounts:
+            - name: gluster-dev
+              mountPath: /dev
             - name: plugin-dir
               mountPath: /plugin
             - name: pods-mount-dir
               mountPath: /var/lib/kubelet/pods
               mountPropagation: "Bidirectional"
       volumes:
+        - name: gluster-dev
+          hostPath:
+            path: /dev
         - name: plugin-dir
           hostPath:
             path: /var/lib/kubelet/plugins_registry/org.gluster.glustervirtblock
