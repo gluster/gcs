@@ -18,7 +18,7 @@ nodes:
 ```
 
 ```
-glustercsctl deploy ./mycluster.yml
+kubectl gluster deploy ./mycluster.yml
 ```
 
 Easy to install on an already running kubernetes cluster.
