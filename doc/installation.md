@@ -4,8 +4,8 @@ layout: doc
 order: 2
 ---
 
-Install `glustercsctl` tool in one of the Kubernetes Master nodes
-using `pip3 install glustercsctl`.
+Install kubectl Gluster plugin in one of the Kubernetes Master nodes
+using `pip3 install kubectl-gluster`.
 
 Prepare the configuration file as required to deploy GlusterCS.
 
@@ -44,8 +44,10 @@ Run the following command to deploy the GlusterCS cluster on an already
 running kubernetes cluster.
 
 ```
-glustercsctl deploy mycluster.yaml
+kubectl gluster deploy mycluster.yaml
 ```
+
+**Note**: Run `kubectl-gluster` if kubectl version is less than `v1.13`
 
 To test whether the deployment was successfull or not, you can run
 `kubectl get pods -n <namespace>` command on the master node. For
