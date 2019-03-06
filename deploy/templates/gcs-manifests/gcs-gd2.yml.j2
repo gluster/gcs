@@ -2,7 +2,7 @@
 kind: StatefulSet
 apiVersion: apps/v1
 metadata:
-  name: gluster-{{ kube_hostname }}
+  name: gluster-{{ kube_hostname.split(".")[0] }}
   namespace: {{ gcs_namespace }}
   labels:
     app.kubernetes.io/part-of: gcs
@@ -46,11 +46,11 @@ spec:
             - name: GD2_CLUSTER_ID
               value: "{{ gcs_gd2_clusterid }}"
             - name: GD2_CLIENTADDRESS
-              value: "gluster-{{ kube_hostname }}-0.glusterd2.{{ gcs_namespace }}:24007"
+              value: "gluster-{{ kube_hostname.split(".")[0] }}-0.glusterd2.{{ gcs_namespace }}:24007"
             - name: GD2_ENDPOINTS
-              value: "http://gluster-{{ kube_hostname }}-0.glusterd2.{{ gcs_namespace }}:24007"
+              value: "http://gluster-{{ kube_hostname.split(".")[0] }}-0.glusterd2.{{ gcs_namespace }}:24007"
             - name: GD2_PEERADDRESS
-              value: "gluster-{{ kube_hostname }}-0.glusterd2.{{ gcs_namespace }}:24008"
+              value: "gluster-{{ kube_hostname.split(".")[0] }}-0.glusterd2.{{ gcs_namespace }}:24008"
             # TODO: Remove RESTAUTH false once we enable setting auth token
             # using secrets
             - name: GD2_RESTAUTH
