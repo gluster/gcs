@@ -73,6 +73,11 @@ spec:
               mountPath: "/var/lib/glusterd2"
             - name: glusterd2-logdir
               mountPath: "/var/log/glusterd2"
+        - name: rsyslog-sidecar
+          image: docker.io/gluster/gluster-rsyslog
+          volumeMounts:
+            - name: glusterd2-logdir
+              mountPath: "/var/log/glusterd2"
       volumes:
         - name: gluster-dev
           hostPath:
